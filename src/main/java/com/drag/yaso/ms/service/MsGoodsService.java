@@ -13,17 +13,20 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSON;
 import com.drag.yaso.common.Constant;
 import com.drag.yaso.common.exception.AMPException;
-import com.drag.yaso.kj.entity.KjUser;
 import com.drag.yaso.ms.dao.MsGoodsDao;
 import com.drag.yaso.ms.dao.MsOrderDao;
+import com.drag.yaso.ms.dao.MsRemindDao;
 import com.drag.yaso.ms.entity.MsGoods;
 import com.drag.yaso.ms.entity.MsOrder;
+import com.drag.yaso.ms.entity.MsRemind;
 import com.drag.yaso.ms.form.MsGoodsForm;
 import com.drag.yaso.ms.resp.MsGoodsResp;
 import com.drag.yaso.ms.vo.MsGoodsDetailVo;
 import com.drag.yaso.ms.vo.MsGoodsVo;
+import com.drag.yaso.ms.vo.MsRemindVo;
 import com.drag.yaso.user.dao.UserDao;
 import com.drag.yaso.user.dao.UserTicketDao;
 import com.drag.yaso.user.dao.UserTicketTemplateDao;
@@ -45,6 +48,8 @@ public class MsGoodsService {
 	private MsGoodsDao msGoodsDao;
 	@Autowired
 	private MsOrderDao msOrderDao;
+	@Autowired
+	private MsRemindDao msRemindDao;
 	@Autowired
 	private UserDao userDao;
 	@Autowired
@@ -81,6 +86,7 @@ public class MsGoodsService {
 	 * @return
 	 */
 	public MsGoodsDetailVo goodsDetail(int goodsId) {
+		log.info("【查询秒杀详情商品】传入参数:{}",goodsId);
 		List<UserVo> grouperList = new ArrayList<UserVo>();
 		MsGoodsDetailVo detailVo = new MsGoodsDetailVo();
 		MsGoods goods = msGoodsDao.findGoodsDetail(goodsId);
@@ -108,7 +114,7 @@ public class MsGoodsService {
 					userVo.setPrice(pu.getPrice());
 					userVo.setNumber(pu.getNumber());
 					if(user != null) {
-						BeanUtils.copyProperties(user, userVo,new String[]{"createTime"});
+						BeanUtils.copyProperties(user, userVo,new String[]{"createTime","updateTime"});
 						userVo.setCreateTime(DateUtil.format(pu.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
 						grouperList.add(userVo);
 					}
@@ -145,6 +151,7 @@ public class MsGoodsService {
 	 */
 	@Transactional
 	public MsGoodsResp collage(MsGoodsForm form) {
+		log.info("【秒杀,传入参数】form:{}",JSON.toJSONString(form));
 		MsGoodsResp baseResp = new MsGoodsResp();
 		try {
 			//商品编号
@@ -156,6 +163,7 @@ public class MsGoodsService {
 			if(user == null) {
 				baseResp.setReturnCode(Constant.USERNOTEXISTS);
 				baseResp.setErrorMessage("该用户不存在!");
+				log.error("【本人发起秒杀,用户不存在】openid:{}",openid);
 				return baseResp;
 			}
 			//获取系统用户编号
@@ -169,12 +177,13 @@ public class MsGoodsService {
 				if(!flag) {
 					baseResp.setReturnCode(Constant.STOCK_FAIL);
 					baseResp.setErrorMessage("库存不足");
-					log.error("该商品库存不足,msgoodsId:{}",msgoodsId);
+					log.error("【该商品库存不足】,msgoodsId:{}",msgoodsId);
 					return baseResp;
 				}
 			}else {
 				baseResp.setReturnCode(Constant.PRODUCTNOTEXISTS);
 				baseResp.setErrorMessage("该商品编号不存在!");
+				log.error("【本人发起秒杀,商品编号不存在】msgoodsId:{}",msgoodsId);
 				return baseResp;
 			}
 			
@@ -189,6 +198,8 @@ public class MsGoodsService {
 			msOrder.setCreateTime(new Timestamp(System.currentTimeMillis()));
 			msOrderDao.save(msOrder);
 			
+			log.info("【秒杀,订单插入成功】msOrder:{}",JSON.toJSONString(msOrder));
+			
 			//新增秒杀次数
 			this.addMsTimes(goods);
 			
@@ -199,13 +210,17 @@ public class MsGoodsService {
 			UserTicketTemplate  template = userTicketTemplateDao.findByGoodsIdAndType(msgoodsId, type);
 			//发送卡券
 			if(template != null) {
-				UserTicket ticket = new UserTicket();
-				BeanUtils.copyProperties(template, ticket);
-				ticket.setId(ticket.getId());
-				ticket.setUid(uid);
-				ticket.setStatus(UserTicket.STATUS_NO);
-				ticket.setCreateTime((new Timestamp(System.currentTimeMillis())));
-				userTicketDao.save(ticket);
+				for(int i = 0;i < number; i++) {
+					UserTicket ticket = new UserTicket();
+					BeanUtils.copyProperties(template, ticket);
+					ticket.setId(ticket.getId());
+					ticket.setUid(uid);
+					ticket.setNumber(1);
+					ticket.setStatus(UserTicket.STATUS_NO);
+					ticket.setCreateTime((new Timestamp(System.currentTimeMillis())));
+					userTicketDao.save(ticket);
+					log.info("【秒杀,发送卡券成功】ticket:{}",JSON.toJSONString(ticket));
+				}
 			}
 			
 			//返回参数
@@ -221,6 +236,73 @@ public class MsGoodsService {
 		return baseResp;
 	}
 	
+	/**
+	 * 秒杀提醒
+	 * @param form
+	 * @return
+	 */
+	@Transactional
+	public MsGoodsResp remind(MsGoodsForm form) {
+		log.info("【秒杀提醒,传入参数】form:{}",JSON.toJSONString(form));
+		MsGoodsResp baseResp = new MsGoodsResp();
+		try {
+			String openid = form.getOpenid();
+			User user = userDao.findByOpenid(openid);
+			if(user == null) {
+				baseResp.setReturnCode(Constant.USERNOTEXISTS);
+				baseResp.setErrorMessage("该用户不存在!");
+				log.error("【秒杀提醒,用户不存在】openid:{}",openid);
+				return baseResp;
+			}
+			int msgoodsId = form.getMsgoodsId();
+			MsRemind remind = msRemindDao.findByMsgoodsIdAndOpenid(msgoodsId, openid);
+			if(remind != null) {
+				int remindType = form.getRemindType();
+				if(remindType == 0) {
+					remind.setStatus(MsRemind.STATUS_YES);
+				}else {
+					remind.setStatus(MsRemind.STATUS_NO);
+				}
+				msRemindDao.saveAndFlush(remind);
+			}else {
+				MsRemind remd = new MsRemind();
+				remd.setId(remd.getId());
+				remd.setOpenid(openid);
+				remd.setMsgoodsId(msgoodsId);
+				remd.setMsgoodsName(form.getMsgoodsName());
+				remd.setStatus(MsRemind.STATUS_YES);
+				remd.setFormId(form.getFormId());
+				remd.setCreateTime(new Timestamp(System.currentTimeMillis()));
+				msRemindDao.save(remd);
+			}
+			//返回参数
+			baseResp.setReturnCode(Constant.SUCCESS);
+			baseResp.setErrorMessage("秒杀提醒设置成功！");
+		} catch (Exception e) {
+			log.error("系统异常,{}",e);
+			throw AMPException.getException("系统异常!");
+		}
+		return baseResp;
+	}
+	
+	/**
+	 * 查询秒杀提醒
+	 * @param openid
+	 * @return
+	 */
+	public List<MsRemindVo> remindList(String openid) {
+		List<MsRemindVo> resp = new  ArrayList<MsRemindVo>();
+		List<MsRemind> msList =  msRemindDao.findByOpenid(openid);
+		if(msList != null && msList.size() > 0) {
+			for(MsRemind ms : msList) {
+				MsRemindVo vo = new MsRemindVo();
+				BeanUtils.copyProperties(ms, vo,new String[]{"createTime"});
+				vo.setCreateTime((DateUtil.format(ms.getCreateTime(), "yyyy-MM-dd HH:mm:ss")));
+				resp.add(vo);
+			}
+		}
+		return resp;
+	}
 	
 	/**
 	 * 秒杀商品减库存

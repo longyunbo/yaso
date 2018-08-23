@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.drag.yaso.common.Constant;
 import com.drag.yaso.common.exception.AMPException;
@@ -96,6 +97,7 @@ public class KjGoodsService {
 	 * @return
 	 */
 	public KjGoodsDetailVo goodsDetail(int goodsId) {
+		log.info("【砍价查询砍价详情商品】传入参数:{}",goodsId);
 		List<UserVo> grouperList = new ArrayList<UserVo>();
 		KjGoodsDetailVo detailVo = new KjGoodsDetailVo();
 		List<KjUser> groupers = new ArrayList<KjUser>();
@@ -125,7 +127,7 @@ public class KjGoodsService {
 					userVo.setCode(pu.getKjcode());
 					userVo.setStatus(pu.getKjstatus());
 					if(user != null) {
-						BeanUtils.copyProperties(user, userVo,new String[]{"createTime"});
+						BeanUtils.copyProperties(user, userVo,new String[]{"createTime","updateTime"});
 						userVo.setCreateTime(DateUtil.format(pu.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
 						grouperList.add(userVo);
 					}
@@ -162,6 +164,7 @@ public class KjGoodsService {
 	 */
 	@Transactional
 	public KjGoodsResp collage(KjGoodsForm form) {
+		log.info("【本人发起砍价,传入参数】form:{}",JSON.toJSONString(form));
 		KjGoodsResp baseResp = new KjGoodsResp();
 		try {
 			int kjgoodsId = form.getKjgoodsId();
@@ -172,11 +175,13 @@ public class KjGoodsService {
 			if(user == null) {
 				baseResp.setReturnCode(Constant.USERNOTEXISTS);
 				baseResp.setErrorMessage("该用户不存在!");
+				log.error("【本人发起砍价,用户不存在】openid:{}",openid);
 				return baseResp;
 			}
 			if(goods == null) {
 				baseResp.setReturnCode(Constant.PRODUCTNOTEXISTS);
 				baseResp.setErrorMessage("该商品编号不存在!");
+				log.error("【本人发起砍价,商品编号不存在】kjgoodsId:{}",kjgoodsId);
 				return baseResp;
 			}
 			
@@ -184,6 +189,7 @@ public class KjGoodsService {
 			if(!authFlag) {
 				baseResp.setReturnCode(Constant.AUTH_OVER);
 				baseResp.setErrorMessage("该用户权限不够!");
+				log.error("【本人发起砍价,用户权限不够】user:{}",user);
 				return baseResp;
 			}
 			
@@ -197,6 +203,7 @@ public class KjGoodsService {
 				if(vipKjUserList != null && vipKjUserList.size() > 0) {
 					baseResp.setReturnCode(Constant.KJTIME_OVER);
 					baseResp.setErrorMessage("该商品只能砍价一次!");
+					log.error("【本人发起砍价,该商品只能砍价一次】kjgoodsId:{},uid:{}",kjgoodsId,uid);
 					return baseResp;
 				}
 			}
@@ -205,6 +212,7 @@ public class KjGoodsService {
 			if(kjList != null && kjList.size() > 0) {
 				baseResp.setReturnCode(Constant.USERALREADYIN_FAIL);
 				baseResp.setErrorMessage("该用户已经砍过此商品，请完成活动后再砍!");
+				log.error("【本人发起砍价,该用户已经砍过此商品，请完成活动后再砍!】kjgoodsId:{},uid:{}",kjgoodsId,uid);
 				return baseResp;
 			}
 			
@@ -217,7 +225,7 @@ public class KjGoodsService {
 				if(!flag) {
 					baseResp.setReturnCode(Constant.STOCK_FAIL);
 					baseResp.setErrorMessage("库存不足");
-					log.error("该商品库存不足,kjgoodsId:{}",kjgoodsId);
+					log.error("【该商品库存不足】kjgoodsId:{}",kjgoodsId);
 					return baseResp;
 				}
 			}
@@ -279,6 +287,7 @@ public class KjGoodsService {
 	 * @return
 	 */
 	public KjGoodsDetailVo myDetail(String kjcode) {
+		log.info("【本人(好友)查询砍价详情】传入参数:{}",kjcode);
 		List<UserVo> grouperList = new ArrayList<UserVo>();
 		KjGoodsDetailVo detailVo = new KjGoodsDetailVo();
 		List<KjUser> groupers = new ArrayList<KjUser>();
@@ -315,7 +324,7 @@ public class KjGoodsService {
 							int uid = pu.getUid();
 							User user = userMap.get(uid);
 							if(user != null) {
-								BeanUtils.copyProperties(user, userVo,new String[]{"createTime"});
+								BeanUtils.copyProperties(user, userVo,new String[]{"createTime","updateTime"});
 								userVo.setCreateTime(DateUtil.format(pu.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
 								grouperList.add(userVo);
 							}
@@ -335,6 +344,7 @@ public class KjGoodsService {
 	 */
 	@Transactional
 	public KjGoodsResp friendcollage(KjGoodsForm form) {
+		log.info("【好友帮忙砍价,传入参数】form:{}",JSON.toJSONString(form));
 		KjGoodsResp baseResp = new KjGoodsResp();
 		try {
 			//砍价规模
@@ -351,6 +361,7 @@ public class KjGoodsService {
 			if(user == null) {
 				baseResp.setReturnCode(Constant.USERNOTEXISTS);
 				baseResp.setErrorMessage("该用户不存在!");
+				log.error("【好友发起砍价,用户不存在】openid:{}",openid);
 				return baseResp;
 			}
 			//获取系统用户编号
@@ -360,6 +371,7 @@ public class KjGoodsService {
 			if(goods == null) {
 				baseResp.setReturnCode(Constant.PRODUCTNOTEXISTS);
 				baseResp.setErrorMessage("该商品编号不存在!");
+				log.error("【好友发起砍价,商品编号不存在】kjgoodsId:{}",kjgoodsId);
 				return baseResp;
 			}
 			
@@ -370,17 +382,23 @@ public class KjGoodsService {
 //				return baseResp;
 //			}
 			//同一个用户砍价校验
-			KjUser kjuser = kjUserDao.findByKjGoodsIdAndUidAndKjCode(kjgoodsId, uid, kjCode);
-			if(kjuser != null) {
+//			KjUser kjuser = kjUserDao.findByKjGoodsIdAndUidAndKjCode(kjgoodsId, uid, kjCode);
+			List<KjUser> kjuser = kjUserDao.findByKjGoodsIdAndUidAndIsHeader(kjgoodsId, uid, KjUser.ISHEADER_NO);
+			if(kjuser != null && kjuser.size() > 0) {
 				baseResp.setReturnCode(Constant.USERALREADYIN_FAIL);
 				baseResp.setErrorMessage("该用户已经砍过此商品，不能再砍价!");
+				log.error("【好友发起砍价,该用户已经砍过此商品，不能再砍价】kjgoodsId:{},uid:{},kjCode:{}",kjgoodsId,uid,kjCode);
 				return baseResp;
 			}
 			//根据砍价编号查询
 			List<KjUser> kjList = kjUserDao.findByKjCode(kjCode);
 			//获取团长
 			KjUser grouper = null;
+			
+			BigDecimal alreadyPrice = BigDecimal.ZERO;
 			for(KjUser us: kjList) {
+				//已经砍过的总金额
+				alreadyPrice = alreadyPrice.add(us.getPrice());
 				if(us.getIsHeader() == PtUser.ISHEADER_YES) {
 					grouper = us;
 				}
@@ -393,26 +411,28 @@ public class KjGoodsService {
 				if(grouperSize >= kjSize) {
 					baseResp.setReturnCode(Constant.ACTIVITYALREADYDOWN_FAIL);
 					baseResp.setErrorMessage("该团砍价已完成，不能再砍价!");
+					log.error("【好友发起砍价,该团砍价已完成，不能再砍价】kjCode:{}",kjCode);
 					return baseResp;
 				}
 			}else {
 				baseResp.setReturnCode(Constant.ACTIVITYNOTEXISTS);
 				baseResp.setErrorMessage("该砍价编号不存在!");
+				log.error("【好友发起砍价,砍价编号不存在】kjCode:{}",kjCode);
 				return baseResp;
 			}
 			
 			//购买数量
-			int number = 1;
-			if(goods != null) {
-				//减库存
-				Boolean flag = this.delStock(goods,number);
-				if(!flag) {
-					baseResp.setReturnCode(Constant.STOCK_FAIL);
-					baseResp.setErrorMessage("库存不足");
-					log.error("该商品库存不足,kjgoodsId:{}",kjgoodsId);
-					return baseResp;
-				}
-			}
+//			int number = 1;
+//			if(goods != null) {
+//				//减库存
+//				Boolean flag = this.delStock(goods,number);
+//				if(!flag) {
+//					baseResp.setReturnCode(Constant.STOCK_FAIL);
+//					baseResp.setErrorMessage("库存不足");
+//					log.error("【该商品库存不足】kjgoodsId:{}",kjgoodsId);
+//					return baseResp;
+//				}
+//			}
 			
 			//砍价用户表中也插入一条数据
 			KjUser kjUser = new KjUser();
@@ -426,13 +446,25 @@ public class KjGoodsService {
 			kjUser.setKjSize(goods.getKjSize());
 			
 			//商品默认价格
-			BigDecimal kjPrice = goods.getKjPrice();
+//			BigDecimal kjPrice = goods.getKjPrice();
 			
-			BigDecimal alreadyPrice = BigDecimal.ZERO;
-			for (KjUser kUser : kjList) {
-				alreadyPrice = alreadyPrice.add(kUser.getPrice());
+//			BigDecimal alreadyPrice = BigDecimal.ZERO;
+//			for (KjUser kUser : kjList) {
+//				alreadyPrice = alreadyPrice.add(kUser.getPrice());
+//			}
+//			float price = MoneyUtil.randomRedPacket(kjPrice.subtract(alreadyPrice).floatValue(), 1, 20, kjSize - grouperSize);
+			
+			//商品默认价格
+			BigDecimal kjPrice = goods.getKjPrice();
+			float price = 0;
+			if(grouperSize < 20) {
+				price = MoneyUtil.randomRedPacket(kjPrice.subtract(alreadyPrice).floatValue(), 1, 8, kjSize - grouperSize);
+			}else if(grouperSize >= 20 && grouperSize < 50){
+				price = MoneyUtil.randomRedPacket(kjPrice.subtract(alreadyPrice).floatValue(), 1, 4, kjSize - grouperSize);
+			}else {
+				price = MoneyUtil.randomRedPacket(kjPrice.subtract(alreadyPrice).floatValue(), 0.1f, 0.8f, kjSize - grouperSize);
 			}
-			float price = MoneyUtil.randomRedPacket(kjPrice.subtract(alreadyPrice).floatValue(), 1, 20, kjSize - grouperSize);
+			
 			BigDecimal priceB = new BigDecimal(price);
 			kjUser.setPrice(priceB);
 			
@@ -504,23 +536,24 @@ public class KjGoodsService {
 						}
 					}
 					
-					
 					for(KjUser user : kjList) {
 						int isHeader = user.getIsHeader();
 //						User us = userDao.findOne(user.getUid());
 						String uid = String.valueOf(user.getUid());
-						//新增恐龙骨
-						dragGoodsService.addDragBone(userMap.get(uid),goods.getKjgoodsId(),goods.getKjgoodsName(),Constant.TYPE_KJ,goods.getDragBone(), goods.getExp());
 						//给团长发送卡券
 						if(ZlUser.ISHEADER_YES == isHeader) {
+							//新增恐龙骨
+							dragGoodsService.addDragBone(userMap.get(uid),goods.getKjgoodsId(),goods.getKjgoodsName(),Constant.TYPE_KJ,goods.getDragBone(), goods.getExp());
 							if(template != null) {
 								UserTicket ticket = new UserTicket();
 								BeanUtils.copyProperties(template, ticket);
 								ticket.setId(ticket.getId());
 								ticket.setUid(user.getUid());
+								ticket.setNumber(1);
 								ticket.setStatus(UserTicket.STATUS_NO);
 								ticket.setCreateTime(new Timestamp(System.currentTimeMillis()));
 								userTicketDao.save(ticket);
+								log.info("【砍价发送卡券插入成功】ticket:{}",JSON.toJSONString(ticket));
 							}
 							JSONObject json = new JSONObject();
 							//openid

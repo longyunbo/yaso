@@ -19,4 +19,7 @@ public interface UserDao extends JpaRepository<User, String>, JpaSpecificationEx
 	
 	@Query(value = "select * from t_user where id in (?1) ", nativeQuery = true)
 	List<User> findByIdIn(Set<Integer> id);
+	
+	@Query(value = "select * from t_user where id != (?1) ", nativeQuery = true)
+	List<User> findByIdNotIn(int id);
 }

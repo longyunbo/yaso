@@ -26,6 +26,7 @@ import com.drag.yaso.pt.entity.PtGoods;
 import com.drag.yaso.pt.entity.PtOrder;
 import com.drag.yaso.pt.entity.PtUser;
 import com.drag.yaso.user.entity.User;
+import com.drag.yaso.utils.StringUtil;
 import com.drag.yaso.utils.WxUtil;
 
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +60,7 @@ public class IsEndCheckTask {
 						ptGoods.setIsEnd(1);
 						ptGoods.setUpdateTime(new Timestamp(System.currentTimeMillis()));
 						ptGoodsDao.saveAndFlush(ptGoods);
-						log.info("定时任务处理成功，更新数据{}", ptGoods);
+						
 						
 						int goodsId = ptGoods.getPtgoodsId();
 						//查询拼团中的人数
@@ -82,33 +83,34 @@ public class IsEndCheckTask {
 							for(PtOrder order : orders) {
 								int number = order.getNumber();
 								allNumber = allNumber + number;
-								
-								String out_trade_no = order.getOutTradeNo();
-								BigDecimal num = new BigDecimal(order.getNumber());
-								BigDecimal price = order.getPrice();
-								//单位以分计算
-								BigDecimal totalPrice = price.multiply(num).multiply(new BigDecimal(100));
-								//退款
-								JSONObject returnJson = PayReturn.wxReturn(out_trade_no, totalPrice.intValue());
-								String out_refund_no = returnJson.getString("out_refund_no");
-								String return_code = returnJson.getString("return_code");
-								String result_code = returnJson.getString("result_code");
-								if(return_code.equals("SUCCESS") && result_code.equals("SUCCESS")) {
-									order.setPtrefundcode(out_refund_no);
-									order.setOrderstatus(PtOrder.ORDERSTATUS_RETURN);
-								}else {
-									order.setPtrefundcode(out_refund_no);
-									order.setOrderstatus(PtOrder.ORDERSTATUS_FAIL);
+								String ptrefundcode = order.getPtrefundcode();
+								if(StringUtil.isEmpty(ptrefundcode)) {
+									String out_trade_no = order.getOutTradeNo();
+									BigDecimal num = new BigDecimal(order.getNumber());
+									BigDecimal price = order.getPrice();
+									//单位以分计算
+									BigDecimal totalPrice = price.multiply(num).multiply(new BigDecimal(100));
+									//退款
+									JSONObject returnJson = PayReturn.wxReturn(out_trade_no, totalPrice.intValue());
+									String out_refund_no = returnJson.getString("out_refund_no");
+									String return_code = returnJson.getString("return_code");
+									String result_code = returnJson.getString("result_code");
+									if(return_code.equals("SUCCESS") && result_code.equals("SUCCESS")) {
+										order.setPtrefundcode(out_refund_no);
+										order.setOrderstatus(PtOrder.ORDERSTATUS_RETURN);
+									}else {
+										order.setPtrefundcode(out_refund_no);
+										order.setOrderstatus(PtOrder.ORDERSTATUS_FAIL);
+									}
+									ptOrderDao.saveAndFlush(order);
 								}
-								ptOrderDao.saveAndFlush(order);
-								
 							}
 							//回滚库存
 							int ptgoodsNumber = ptGoods.getPtgoodsNumber();
 							ptGoods.setPtgoodsNumber(ptgoodsNumber + allNumber);
 							ptGoodsDao.saveAndFlush(ptGoods);
 						}
-						
+						log.info("【拼团定时任务处理成功】，更新数据{}", ptGoods);
 					}
 				}
 			}

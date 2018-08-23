@@ -14,15 +14,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.drag.yaso.pt.entity.PtGoods;
 import com.drag.yaso.user.dao.UserDao;
 import com.drag.yaso.user.entity.User;
 import com.drag.yaso.user.form.UserForm;
 import com.drag.yaso.user.resp.UserResp;
 import com.drag.yaso.user.service.UserService;
 import com.drag.yaso.user.vo.ActivityVo;
+import com.drag.yaso.user.vo.UserReceivingAddressVo;
 import com.drag.yaso.user.vo.UserVo;
 import com.drag.yaso.utils.WxUtil;
+import com.drag.yaso.wm.form.OrderInfoForm;
 
 
 @RestController
@@ -82,6 +83,17 @@ public class UserController {
 	}
 	
 	/**
+	 * 更新用户
+	 * @param form
+	 * @return
+	 */
+	@RequestMapping(value = "/userupdate", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<UserResp> userUpdate(@RequestBody UserForm form) {
+		UserResp br = userService.userUpdate(form);
+		return new ResponseEntity<UserResp>(br, HttpStatus.OK);
+	}
+	
+	/**
 	 * 根据openid获取活动
 	 * @param openid
 	 * @return
@@ -90,6 +102,28 @@ public class UserController {
 	public @ResponseBody ResponseEntity<List<ActivityVo>> queryActivityByOpenid(@RequestParam(required = true) String openid) {
 		List<ActivityVo> userVo = userService.queryActivityByOpenid(openid);
 		return new ResponseEntity<List<ActivityVo>>(userVo, HttpStatus.OK);
+	}
+	
+	/**
+	 * 用户地址更新
+	 * @param form
+	 * @return
+	 */
+	@RequestMapping(value = "/useraddress", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<UserResp> userAddress(@RequestBody OrderInfoForm form) {
+		UserResp br = userService.userAddress(form);
+		return new ResponseEntity<UserResp>(br, HttpStatus.OK);
+	}
+	
+	/**
+	 * 获取用户地址
+	 * @param openid
+	 * @return
+	 */
+	@RequestMapping(value = "/queryaddress", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<UserReceivingAddressVo> queryAddressByOpenid(@RequestParam(required = true) String openid) {
+		UserReceivingAddressVo br = userService.queryAddressByOpenid(openid);
+		return new ResponseEntity<UserReceivingAddressVo>(br, HttpStatus.OK);
 	}
 	
 }

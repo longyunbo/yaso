@@ -49,14 +49,16 @@ public class UserTicketService {
 	public List<UserTicketVo> listTicket(String openid) {
 		List<UserTicketVo> ticketResp = new ArrayList<UserTicketVo>();
 		User user = userDao.findByOpenid(openid);
-		int uid = user.getId();
-		List<UserTicket> ticketList = userTicketDao.findByUid(uid);
-		if (ticketList != null && ticketList.size() > 0) {
-			for (UserTicket ticket : ticketList) {
-				UserTicketVo resp = new UserTicketVo();
-				BeanUtils.copyProperties(ticket, resp,new String[]{"createTime", "updateTime"});
-				resp.setCreateTime((DateUtil.format(ticket.getCreateTime(), "yyyy-MM-dd HH:mm:ss")));
-				ticketResp.add(resp);
+		if(user != null) {
+			int uid = user.getId();
+			List<UserTicket> ticketList = userTicketDao.findByUid(uid);
+			if (ticketList != null && ticketList.size() > 0) {
+				for (UserTicket ticket : ticketList) {
+					UserTicketVo resp = new UserTicketVo();
+					BeanUtils.copyProperties(ticket, resp,new String[]{"createTime", "updateTime"});
+					resp.setCreateTime((DateUtil.format(ticket.getCreateTime(), "yyyy-MM-dd HH:mm:ss")));
+					ticketResp.add(resp);
+				}
 			}
 		}
 		return ticketResp;
@@ -86,6 +88,7 @@ public class UserTicketService {
 				UserTicket ticket = new UserTicket();
 				BeanUtils.copyProperties(template, ticket);
 				ticket.setUid(uid);
+				ticket.setNumber(1);
 				ticket.setStatus(UserTicket.STATUS_NO);
 				ticket.setCreateTime(new Timestamp(System.currentTimeMillis()));
 				userTicketDao.save(ticket);

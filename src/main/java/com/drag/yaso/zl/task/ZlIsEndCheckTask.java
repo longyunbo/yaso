@@ -45,7 +45,6 @@ public class ZlIsEndCheckTask {
 						zlGoods.setIsEnd(1);
 						zlGoods.setUpdateTime(new Timestamp(System.currentTimeMillis()));
 						zlGoodsDao.saveAndFlush(zlGoods);
-						log.info("定时任务处理成功，更新数据{}", zlGoods);
 						int goodsId = zlGoods.getZlgoodsId();
 						//查询助力中的人数
 						List<ZlUser> zlList = zlUserDao.findByZlGoodsIdAndZlstatus(goodsId,ZlUser.PTSTATUS_MIDDLE);
@@ -56,13 +55,16 @@ public class ZlIsEndCheckTask {
 								//把在助力中的状态的修改成失败
 								ku.setZlstatus(ZlUser.PTSTATUS_FAIL);
 								zlUserDao.saveAndFlush(ku);
-								number ++ ;
+								if(ZlUser.ISHEADER_YES == ku.getIsHeader()) {
+									number ++ ;
+								}
 							}
 							//回滚库存
 							int zlgoodsNumber = zlGoods.getZlgoodsNumber();
 							zlGoods.setZlgoodsNumber(zlgoodsNumber + number);
 							zlGoodsDao.saveAndFlush(zlGoods);
 						}
+						log.info("【助力定时任务处理成功】，更新数据{}", zlGoods);
 					}
 				}
 			}

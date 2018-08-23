@@ -90,7 +90,10 @@ public class KjGoodsController {
 	 */
 	@RequestMapping(value = "/freindcollage", method = {RequestMethod.POST,RequestMethod.GET})
 	public @ResponseBody ResponseEntity<KjGoodsResp> freindcollage(@RequestBody KjGoodsForm form) {
-		KjGoodsResp br = kjGoodsService.friendcollage(form);
+		KjGoodsResp br =  null;
+		for(int i = 0 ; i<= 100 ; i++) {
+			br = kjGoodsService.friendcollage(form);
+		}
 		return new ResponseEntity<KjGoodsResp>(br, HttpStatus.OK);
 	}
 	

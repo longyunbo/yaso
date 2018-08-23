@@ -48,7 +48,7 @@ public class Xiadan {
 
 			String result = HttpRequest.sendPost("https://api.mch.weixin.qq.com/pay/unifiedorder", order);
 			System.out.println(result);
-			L.info("---------下单返回:" + result);
+			log.info("---------下单返回:" + result);
 			XStream xStream = new XStream();
 			xStream.alias("xml", OrderReturnInfo.class);
 
@@ -58,7 +58,7 @@ public class Xiadan {
 			return itemJSONObj;
 		} catch (Exception e) {
 			e.printStackTrace();
-			L.error("-------", e);
+			log.error("-------", e);
 		}
 		return json;
 

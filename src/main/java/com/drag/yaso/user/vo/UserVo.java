@@ -30,7 +30,7 @@ public class UserVo implements Serializable {
 	/**
 	 * 性别
 	 */
-//	private int sex;
+	private int sex;
 	/**
 	 * 昵称
 	 */
@@ -38,11 +38,15 @@ public class UserVo implements Serializable {
 	/**
 	 * 真实姓名
 	 */
-//	private String realname;
+	private String realname;
 	/**
-	 * 年龄
+	 * 手机
 	 */
-//	private int age;
+	private String mobile;
+	/**
+	 * 生日
+	 */
+	private String birthday;
 	/**
 	 * 会员等级
 	 */
@@ -79,5 +83,9 @@ public class UserVo implements Serializable {
 	 * 创建时间
 	 */
 	private String createTime;
+	/**
+	 * 更新时间
+	 */
+	private String updateTime;
 	
 }

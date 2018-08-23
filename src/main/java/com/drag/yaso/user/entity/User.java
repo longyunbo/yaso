@@ -56,7 +56,7 @@ public class User implements Serializable {
 	/**
 	 * 生日
 	 */
-	private Date birthday;
+	private String birthday;
 	/**
 	 * 邮箱
 	 */
@@ -89,5 +89,9 @@ public class User implements Serializable {
 	 * 创建时间
 	 */
 	private Date createTime;
+	/**
+	 * 更新时间
+	 */
+	private Date updateTime;
 
 }

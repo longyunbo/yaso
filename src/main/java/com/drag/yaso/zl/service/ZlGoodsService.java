@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.drag.yaso.common.Constant;
 import com.drag.yaso.common.exception.AMPException;
@@ -118,7 +119,7 @@ public class ZlGoodsService {
 					userVo.setCode(pu.getZlcode());
 					userVo.setStatus(pu.getZlstatus());
 					if(user != null) {
-						BeanUtils.copyProperties(user, userVo,new String[]{"createTime"});
+						BeanUtils.copyProperties(user, userVo,new String[]{"createTime","updateTime"});
 						userVo.setCreateTime(DateUtil.format(pu.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
 						grouperList.add(userVo);
 					}
@@ -155,6 +156,7 @@ public class ZlGoodsService {
 	 */
 	@Transactional
 	public ZlGoodsResp collage(ZlGoodsForm form) {
+		log.info("【本人发起助力,传入参数】form:{}",JSON.toJSONString(form));
 		ZlGoodsResp baseResp = new ZlGoodsResp();
 		try {
 			int zlgoodsId = form.getZlgoodsId();
@@ -163,12 +165,14 @@ public class ZlGoodsService {
 			if(user == null) {
 				baseResp.setReturnCode(Constant.USERNOTEXISTS);
 				baseResp.setErrorMessage("该用户不存在!");
+				log.error("【本人发起助力,用户不存在】openid:{}",openid);
 				return baseResp;
 			}
 			ZlGoods goods = zlGoodsDao.findGoodsDetail(zlgoodsId);
 			if(goods == null) {
 				baseResp.setReturnCode(Constant.PRODUCTNOTEXISTS);
 				baseResp.setErrorMessage("该商品编号不存在!");
+				log.error("【本人发起助力,商品编号不存在】ptgoodsId:{}",zlgoodsId);
 				return baseResp;
 			}
 			
@@ -176,6 +180,7 @@ public class ZlGoodsService {
 			if(!authFlag) {
 				baseResp.setReturnCode(Constant.AUTH_OVER);
 				baseResp.setErrorMessage("该用户权限不够!");
+				log.error("【本人发起助力,用户权限不够】user:{}",user);
 				return baseResp;
 			}
 			
@@ -186,6 +191,7 @@ public class ZlGoodsService {
 			if(zlList != null && zlList.size() > 0) {
 				baseResp.setReturnCode(Constant.USERALREADYIN_FAIL);
 				baseResp.setErrorMessage("该用户已经助力过此商品，请完成活动后再发起!");
+				log.error("【本人发起助力,该用户已经发起此商品，请完成活动后再发起!】kjgoodsId:{},uid:{}",zlgoodsId,uid);
 				return baseResp;
 			}
 			
@@ -200,6 +206,7 @@ public class ZlGoodsService {
 					baseResp.setReturnCode(Constant.STOCK_FAIL);
 					baseResp.setErrorMessage("库存不足");
 					log.error("该商品库存不足,zlgoodsId:{}",zlgoodsId);
+					log.error("【该商品库存不足】zlgoodsId:{}",zlgoodsId);
 					return baseResp;
 				}
 			}
@@ -284,7 +291,7 @@ public class ZlGoodsService {
 							userVo.setCode(pu.getZlcode());
 							userVo.setStatus(pu.getZlstatus());
 							if(user != null) {
-								BeanUtils.copyProperties(user, userVo,new String[]{"createTime"});
+								BeanUtils.copyProperties(user, userVo,new String[]{"createTime","updateTime"});
 								userVo.setCreateTime(DateUtil.format(pu.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
 								grouperList.add(userVo);
 							}
@@ -304,6 +311,7 @@ public class ZlGoodsService {
 	 */
 	@Transactional
 	public ZlGoodsResp friendcollage(ZlGoodsForm form) {
+		log.info("【好友助力,传入参数】form:{}",JSON.toJSONString(form));
 		ZlGoodsResp baseResp = new ZlGoodsResp();
 		try {
 			//助力规模
@@ -319,6 +327,7 @@ public class ZlGoodsService {
 			if(user == null) {
 				baseResp.setReturnCode(Constant.USERNOTEXISTS);
 				baseResp.setErrorMessage("该用户不存在!");
+				log.error("【好友助力,用户不存在】openid:{}",openid);
 				return baseResp;
 			}
 			//获取系统用户编号
@@ -329,21 +338,24 @@ public class ZlGoodsService {
 			if(goods == null) {
 				baseResp.setReturnCode(Constant.PRODUCTNOTEXISTS);
 				baseResp.setErrorMessage("该商品编号不存在!");
+				log.error("【好友助力,商品编号不存在】zlgoodsId:{}",zlgoodsId);
 				return baseResp;
 			}
 			
-			Boolean authFlag =  userService.checkAuth(user, goods.getAuth());
-			if(!authFlag) {
-				baseResp.setReturnCode(Constant.AUTH_OVER);
-				baseResp.setErrorMessage("该用户权限不够!");
-				return baseResp;
-			}
-			
+//			Boolean authFlag =  userService.checkAuth(user, goods.getAuth());
+//			if(!authFlag) {
+//				baseResp.setReturnCode(Constant.AUTH_OVER);
+//				baseResp.setErrorMessage("该用户权限不够!");
+//				log.error("【好友助力,用户权限不够】user:{}",user);
+//				return baseResp;
+//			}
 			//同一个用户助力校验
-			ZlUser zluser = zlUserDao.findByZlGoodsIdAndUidAndZlCode(zlgoodsId, uid, zlCode);
-			if(zluser != null) {
+//			ZlUser zluser = zlUserDao.findByZlGoodsIdAndUidAndZlCode(zlgoodsId, uid, zlCode);
+			List<ZlUser> zluser = zlUserDao.findByZlGoodsIdAndUidAndIsHeader(zlgoodsId, uid, ZlUser.ISHEADER_NO);
+			if(zluser != null  && zluser.size() > 0) {
 				baseResp.setReturnCode(Constant.USERALREADYIN_FAIL);
 				baseResp.setErrorMessage("该用户已经助力过此商品，不能再助力!");
+				log.error("【好友助力,该用户已经助力过此商品，不能再助力】zlgoodsId:{},uid:{},zlCode:{}",zlgoodsId,uid,zlCode);
 				return baseResp;
 			}
 			//根据助力编号查询
@@ -364,26 +376,28 @@ public class ZlGoodsService {
 				if(grouperSize >= zlSize) {
 					baseResp.setReturnCode(Constant.ACTIVITYALREADYDOWN_FAIL);
 					baseResp.setErrorMessage("该团助力已完成，不能再助力!");
+					log.error("【好友助力,该团助力已完成，不能再助力】zlCode:{}",zlCode);
 					return baseResp;
 				}
 			}else {
 				baseResp.setReturnCode(Constant.ACTIVITYNOTEXISTS);
 				baseResp.setErrorMessage("该助力编号不存在!");
+				log.error("【好友助力,该助力编号不存在】zlCode:{}",zlCode);
 				return baseResp;
 			}
 			
 			//购买数量
-			int number = 1;
-			if(goods != null) {
-				//减库存
-				Boolean flag = this.delStock(goods,number);
-				if(!flag) {
-					baseResp.setReturnCode(Constant.STOCK_FAIL);
-					baseResp.setErrorMessage("库存不足");
-					log.error("该商品库存不足,zlgoodsId:{}",zlgoodsId);
-					return baseResp;
-				}
-			}
+//			int number = 1;
+//			if(goods != null) {
+//				//减库存
+//				Boolean flag = this.delStock(goods,number);
+//				if(!flag) {
+//					baseResp.setReturnCode(Constant.STOCK_FAIL);
+//					baseResp.setErrorMessage("库存不足");
+//					log.error("【该商品库存不足】,zlgoodsId:{}",zlgoodsId);
+//					return baseResp;
+//				}
+//			}
 			
 			//助力用户表中也插入一条数据
 			ZlUser zlUser = new ZlUser();
@@ -466,18 +480,20 @@ public class ZlGoodsService {
 						int isHeader = user.getIsHeader();
 //						User us = userDao.findOne(user.getUid());
 						String uid = String.valueOf(user.getUid());
-						//新增恐龙骨
-						dragGoodsService.addDragBone(userMap.get(uid),goods.getZlgoodsId(),goods.getZlgoodsName(),Constant.TYPE_ZL,goods.getDragBone(), goods.getExp());
 						//给团长发送卡券
 						if(ZlUser.ISHEADER_YES == isHeader) {
+							//新增恐龙骨
+							dragGoodsService.addDragBone(userMap.get(uid),goods.getZlgoodsId(),goods.getZlgoodsName(),Constant.TYPE_ZL,goods.getDragBone(), goods.getExp());
 							if(template != null) {
 								UserTicket ticket = new UserTicket();
 								BeanUtils.copyProperties(template, ticket);
 								ticket.setId(ticket.getId());
 								ticket.setUid(user.getUid());
+								ticket.setNumber(1);
 								ticket.setStatus(UserTicket.STATUS_NO);
 								ticket.setCreateTime(new Timestamp(System.currentTimeMillis()));
 								userTicketDao.save(ticket);
+								log.info("【助力发送卡券插入成功】ticket:{}",JSON.toJSONString(ticket));
 							}
 							
 							JSONObject json = new JSONObject();
