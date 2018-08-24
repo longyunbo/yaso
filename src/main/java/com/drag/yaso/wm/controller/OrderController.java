@@ -2,6 +2,9 @@ package com.drag.yaso.wm.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.drag.yaso.wm.form.OrderInfoForm;
 import com.drag.yaso.wm.resp.OrderResp;
 import com.drag.yaso.wm.service.OrderService;
+import com.drag.yaso.wm.vo.OrderCommentVo;
 import com.drag.yaso.wm.vo.OrderDetailVo;
 import com.drag.yaso.wm.vo.OrderInfoVo;
 
@@ -66,7 +70,7 @@ public class OrderController {
 	}
 	
 	/**
-	 * 外卖评论
+	 * 外卖新增评论
 	 * @param form
 	 * @return
 	 */
@@ -76,4 +80,26 @@ public class OrderController {
 		return new ResponseEntity<OrderResp>(detailVo, HttpStatus.OK);
 	}
 	
+	/**
+	 * 商品评价集合
+	 * @param goodsId
+	 * @return
+	 */
+	@RequestMapping(value = "/commentlist", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<List<OrderCommentVo>> orderDetail(@RequestParam(required = true)  int goodsId) {
+		List<OrderCommentVo> list = orderInfoService.goodsComment(goodsId);
+		return new ResponseEntity<List<OrderCommentVo>>(list, HttpStatus.OK);
+	}
+	
+	
+	/**
+	 * 用户上传图片
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/picture", method = {RequestMethod.POST,RequestMethod.GET})
+    public void uploadPicture(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		orderInfoService.uploadPicture(request, response);
+	}
 }

@@ -1,6 +1,7 @@
 package com.drag.yaso.wm.vo;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -51,7 +52,7 @@ public class OrderDetailVo implements Serializable {
 	/**
 	 * 消耗积分
 	 */
-	private int score;
+	private BigDecimal price;
 	/**
 	 * 创建时间
 	 */

@@ -1,6 +1,7 @@
 package com.drag.yaso.wm.vo;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -53,9 +54,21 @@ public class OrderInfoVo implements Serializable {
 	 */
 	private int number;
 	/**
-	 * 消耗积分
+	 * 消耗金额
 	 */
-	private int score;
+	private BigDecimal price;
+	/**
+	 * 优惠金额
+	 */
+	private BigDecimal dicprice;
+	/**
+	 * 订单总金额
+	 */
+	private BigDecimal tolprice;
+	/**
+	 * 商户订单号
+	 */
+	private String outTradeNo;
 	/**
 	 * 购买规格
 	 */
@@ -93,38 +106,6 @@ public class OrderInfoVo implements Serializable {
 	 */
 	private String remark;
 	/**
-	 * 是否开票，0-否，1-是
-	 */
-	private int isBilling;
-	/**
-	 * 开票类型
-	 */
-	private String billingType;
-	/**
-	 * 发票抬头
-	 */
-	private String invPayee;
-	/**
-	 * 发票内容
-	 */
-	private String invContent;
-	/**
-	 * 发票电话
-	 */
-	private String invTel;
-	/**
-	 * 发票人姓名
-	 */
-	private String invName;
-	/**
-	 * 发票邮箱
-	 */
-	private String invEmail;
-	/**
-	 * 开票时间
-	 */
-	private String billTime;
-	/**
 	 * 确认收货时间
 	 */
 	private String confirmReceiptTime;
@@ -132,18 +113,18 @@ public class OrderInfoVo implements Serializable {
 	 * 退款单号
 	 */
 	private String refundcode;
-	/**
-	 * 好评状态,0:好评,1:中评,2:差评
-	 */
-	private int commentstatus;
-	/**
-	 * 好评星数
-	 */
-	private int commentlevel;
-	/**
-	 * 商品评论
-	 */
-	private String comment;
+//	/**
+//	 * 好评状态,0:好评,1:中评,2:差评
+//	 */
+//	private int commentstatus;
+//	/**
+//	 * 好评星数
+//	 */
+//	private int commentlevel;
+//	/**
+//	 * 商品评论
+//	 */
+//	private String comment;
 	/**
 	 * 创建时间
 	 */

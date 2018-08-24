@@ -4,6 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -50,9 +51,9 @@ public class SignUtil {
      */
     public static String getSign(Map<String, Object> params,String secretKey) throws NoSuchAlgorithmException{
     	String sign = "";
-//    	params.put("order_original_id", "200000356865713004");
 		StringBuilder sortedParams = new StringBuilder();
-		params.entrySet().stream().forEachOrdered(paramEntry -> sortedParams.append(paramEntry.getKey()).append(paramEntry.getValue()));
+		Map<String, Object> resultMap = sortMapByKey(params); 
+		resultMap.entrySet().stream().forEachOrdered(paramEntry -> sortedParams.append(paramEntry.getKey()).append(paramEntry.getValue()));
 		try {
 			log.info("【sortedParams】:{}",secretKey + sortedParams.toString() + secretKey);
 			sign = SignUtil.getSign(secretKey + sortedParams.toString() + secretKey);
@@ -60,6 +61,24 @@ public class SignUtil {
 			e.printStackTrace();
 		}
 		return sign;
+    }
+    
+    /**
+     * 使用 Map按key进行排序
+     * @param map
+     * @return
+     */
+    public static Map<String, Object> sortMapByKey(Map<String, Object> map) {
+        if (map == null || map.isEmpty()) {
+            return null;
+        }
+
+        Map<String, Object> sortMap = new TreeMap<String, Object>(
+                new MapKeyComparator());
+
+        sortMap.putAll(map);
+
+        return sortMap;
     }
     
 	/**

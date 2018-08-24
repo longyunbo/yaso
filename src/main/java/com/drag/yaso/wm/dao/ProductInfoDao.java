@@ -22,7 +22,7 @@ public interface ProductInfoDao extends JpaRepository<ProductInfo, String>, JpaS
 	List<ProductInfo> findByIdIn(Set<Integer> msIds);
 	
 	
-	@Query(value = "select * from t_product_info where goods_name like '%?1%' ", nativeQuery = true)
+	@Query(value = "select * from t_product_info where goods_name like %?1% ", nativeQuery = true)
 	List<ProductInfo> findByNameLike(String name);
 	
 	List<ProductInfo> findByType(String type);

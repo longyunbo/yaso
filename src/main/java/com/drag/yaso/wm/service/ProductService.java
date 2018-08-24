@@ -9,8 +9,11 @@ import org.springframework.stereotype.Service;
 import com.drag.yaso.utils.BeanUtils;
 import com.drag.yaso.utils.DateUtil;
 import com.drag.yaso.utils.StringUtil;
+import com.drag.yaso.wm.dao.ProductActivityDao;
 import com.drag.yaso.wm.dao.ProductInfoDao;
+import com.drag.yaso.wm.entity.ProductActivity;
 import com.drag.yaso.wm.entity.ProductInfo;
+import com.drag.yaso.wm.vo.ProductActivityVo;
 import com.drag.yaso.wm.vo.ProductInfoVo;
 
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +24,8 @@ public class ProductService {
 
 	@Autowired
 	private ProductInfoDao productDao;
+	@Autowired
+	private ProductActivityDao productActivityDao;
 
 	/**
 	 * 查询商品列表
@@ -67,6 +72,26 @@ public class ProductService {
 			for (ProductInfo goods : goodsList) {
 				ProductInfoVo resp = new ProductInfoVo();
 				this.copyProperties(goods, resp);
+				goodsResp.add(resp);
+			}
+		}
+		return goodsResp;
+	}
+	
+	/**
+	 * 查询所有活动
+	 * @return
+	 */
+	public List<ProductActivityVo> listActivity() {
+		List<ProductActivityVo> goodsResp = new ArrayList<ProductActivityVo>();
+		List<ProductActivity> goodsList = new ArrayList<ProductActivity>();
+		goodsList = productActivityDao.findAll();
+		if (goodsList != null && goodsList.size() > 0) {
+			for (ProductActivity goods : goodsList) {
+				ProductActivityVo resp = new ProductActivityVo();
+				BeanUtils.copyProperties(goods, resp,new String[]{"createTime", "updateTime"});
+				resp.setCreateTime((DateUtil.format(goods.getCreateTime(), "yyyy-MM-dd HH:mm:ss")));
+				resp.setUpdateTime((DateUtil.format(goods.getUpdateTime(), "yyyy-MM-dd HH:mm:ss")));
 				goodsResp.add(resp);
 			}
 		}

@@ -99,11 +99,23 @@ public class OrderInfo implements Serializable {
 	 */
 	private BigDecimal price;
 	/**
+	 * 优惠金额
+	 */
+	private BigDecimal dicprice;
+	/**
+	 * 订单总金额
+	 */
+	private BigDecimal tolprice;
+	/**
+	 * 商户订单号
+	 */
+	private String outTradeNo;
+	/**
 	 * 购买规格
 	 */
 	private String norms;
 	/**
-	 * 订单状态，0:已付款,  1:已退款
+	 * 订单状态，0:未付款,1:已付款, 2:已退款,3:已评价'
 	 */
 	private int orderstatus;
 	/**
@@ -142,18 +154,18 @@ public class OrderInfo implements Serializable {
 	 * 退款单号
 	 */
 	private String refundcode;
-	/**
-	 * 好评状态,0:好评,1:中评,2:差评
-	 */
-	private int commentstatus;
-	/**
-	 * 好评星数
-	 */
-	private int commentlevel;
-	/**
-	 * 商品评论
-	 */
-	private String comment;
+//	/**
+//	 * 好评状态,0:好评,1:中评,2:差评
+//	 */
+//	private int commentstatus;
+//	/**
+//	 * 好评星数
+//	 */
+//	private int commentlevel;
+//	/**
+//	 * 商品评论
+//	 */
+//	private String comment;
 	/**
 	 * 创建时间
 	 */

@@ -1,5 +1,6 @@
 package com.drag.yaso.dwd.service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 
@@ -38,52 +39,53 @@ public class DianWoDaService {
 			log.info("【点我达派发订单传入参数】:form= {}",form);
 			String url = "api/v3/order-send.json";
 			Date now = new Date(System.currentTimeMillis());
+			BigDecimal order_price = form.getPrice().multiply(new BigDecimal(100));
 			
 			JSONObject json = new JSONObject();
 			//渠道订单编号
-			json.put("order_original_id", "FTP201511091198");
+			json.put("order_original_id", form.getOrderid());
 			//渠道订单创建时间戳
 			json.put("order_create_time", now.getTime());
 			//订单备注
-			json.put("order_remark", "加辣");
+			json.put("order_remark", form.getOrder_remark());
 			//订单金额（分）
-			json.put("order_price",5000);
+			json.put("order_price",order_price);
 			//订单商品重量，单位：克 如果无，传0
-			json.put("cargo_weight", 1000);
+			json.put("cargo_weight", 250);
 			//商品份数，默认传1
 			json.put("cargo_num", 1);
 			//行政区划代码 如杭州：330100
 			json.put("city_code", 330100);
 			//商家编号
-			json.put("seller_id", 123456);
+			json.put("seller_id", form.getSeller_id());
 			//商家店铺名称
-			json.put("seller_name", "肯德基宅急送（黄龙店）");
+			json.put("seller_name", form.getSeller_name());
 			//商家联系方式
-			json.put("seller_mobile", "13986101111");
+			json.put("seller_mobile", form.getSeller_mobile());
 			//商家文字地址
-			json.put("seller_address", "西湖区天目山路307号史塔克基地食堂");
+			json.put("seller_address", "杭州市下城区白石路318号灯塔发展大厦A座");
 			//商家纬度坐标.(坐标系为高德地图坐标系，又称火星坐标). （单位：度）
-			json.put("seller_lat", 30.2764454);
+			json.put("seller_lat", 30.315408);
 			//商家经度坐标.(坐标系为高德地图坐标系，又称火星坐标) （单位：度）
-			json.put("seller_lng", 120.111227);
+			json.put("seller_lng", 120.165993);
 			//收货人姓名
-			json.put("consignee_name", "托尼·史塔克");
+			json.put("consignee_name", form.getReceiptName());
 			//收货人手机号码
-			json.put("consignee_mobile", "13968041111");
+			json.put("consignee_mobile", form.getReceiptTel());
 			//收货人地址
-			json.put("consignee_address", "下城区白石路300号史塔克集团顶楼");
+			json.put("consignee_address", "杭州市下城区西文街147号中粮方圆府");
 			//收货人纬度坐标.(坐标系为高德地图坐标系，又称火星坐标)
-			json.put("consignee_lat", 302.764454);
+			json.put("consignee_lat", 30.315272);
 			//收货人经度坐标.(坐标系为高德地图坐标系，又称火星坐标)
-			json.put("consignee_lng", 120.111227);
+			json.put("consignee_lng", 120.168513);
 			//配送员到店是否需要垫付订单金额	1：是 0：否
-			json.put("money_rider_needpaid", 1);
+			json.put("money_rider_needpaid", 0);
 			//配送员到店后先行垫付的金额(分)，一般货到付款情况下等于餐品价格。若无，传0
-			json.put("money_rider_prepaid", 5000);
+			json.put("money_rider_prepaid", 0);
 			//配送员送达到客户时，向客户收取的费用（分）
-			json.put("money_rider_charge", 5000);
+			json.put("money_rider_charge", 0);
 			//商品必须到店才开始准备或是排队购买的情况下，在商家处等待所需时间（秒）
-			json.put("time_waiting_at_seller", 300);
+			json.put("time_waiting_at_seller", 600);
 			//渠道支付配送费（分）
 			json.put("delivery_fee_from_seller", 500);
 			  
@@ -94,8 +96,16 @@ public class DianWoDaService {
 			log.info("【点我达派发订单返回参数httpresult】:{}",httpresult);
 			if (httpresult != null) {
 				JSONObject jsonResult = JSON.parseObject(httpresult);
-				String dwd_order_id = jsonResult.getString("dwd_order_id");
-				log.info("【点我达派发订单号】:{}",dwd_order_id);
+				String errorCode = jsonResult.getString("errorCode");
+				String message = jsonResult.getString("message");
+				if("0".equals(errorCode)) {
+					String dwd_order_id = jsonResult.getString("dwd_order_id");
+					log.info("【点我达派发订单号】:{}",dwd_order_id);
+				}else {
+					resp.setReturnCode(Constant.FAIL);
+					resp.setErrorMessage(message);
+					return resp;
+				}
 			}else {
 				resp.setReturnCode(Constant.FAIL);
 				resp.setErrorMessage("点我达派发订单失败!");

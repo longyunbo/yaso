@@ -1,36 +1,48 @@
 package com.drag.yaso.wm.service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.drag.yaso.common.Constant;
 import com.drag.yaso.common.exception.AMPException;
+import com.drag.yaso.dwd.service.DianWoDaService;
 import com.drag.yaso.user.dao.UserDao;
 import com.drag.yaso.user.entity.User;
 import com.drag.yaso.utils.BeanUtils;
 import com.drag.yaso.utils.DateUtil;
 import com.drag.yaso.utils.StringUtil;
+import com.drag.yaso.wm.dao.OrderCommentDao;
 import com.drag.yaso.wm.dao.OrderDetailDao;
 import com.drag.yaso.wm.dao.OrderInfoDao;
-import com.drag.yaso.wm.dao.OrderShipperDao;
 import com.drag.yaso.wm.dao.ProductInfoDao;
+import com.drag.yaso.wm.entity.OrderComment;
 import com.drag.yaso.wm.entity.OrderDetail;
 import com.drag.yaso.wm.entity.OrderInfo;
-import com.drag.yaso.wm.entity.OrderShipper;
 import com.drag.yaso.wm.entity.ProductInfo;
 import com.drag.yaso.wm.form.OrderDetailForm;
 import com.drag.yaso.wm.form.OrderInfoForm;
 import com.drag.yaso.wm.resp.OrderResp;
+import com.drag.yaso.wm.vo.OrderCommentVo;
 import com.drag.yaso.wm.vo.OrderDetailVo;
 import com.drag.yaso.wm.vo.OrderInfoVo;
 
@@ -43,13 +55,15 @@ public class OrderService {
 	@Autowired
 	private OrderInfoDao orderInfoDao;
 	@Autowired
-	private OrderDetailDao orderDetailDao;
+	private OrderCommentDao orderCommentDao;
 	@Autowired
-	private OrderShipperDao orderShipperDao;
+	private OrderDetailDao orderDetailDao;
 	@Autowired
 	private UserDao userDao;
 	@Autowired
 	private ProductInfoDao productInfoDao;
+	@Autowired
+	private DianWoDaService dianWoDaService;
 	/**
 	 * 外卖购买下单
 	 * @param form
@@ -61,13 +75,17 @@ public class OrderService {
 		OrderResp resp = new OrderResp();
 		try {
 			String orderid = StringUtil.uuid();
+			form.setOrderid(orderid);
 			int goodsId = form.getGoodsId();
 			String goodsName = form.getGoodsName();
 			String type = form.getType();
+			String outTradeNo = form.getOutTradeNo();
 			//购买总数量
 			int number = form.getNumber();
 			//消耗总金额
 			BigDecimal price = form.getPrice();
+			BigDecimal tolprice = form.getTolprice();
+			BigDecimal dicprice = form.getDicprice();
 			String openid = form.getOpenid();
 			String buyName = form.getBuyName();
 			String phone = form.getPhone();
@@ -100,7 +118,10 @@ public class OrderService {
 				order.setGoodsImg(goods.getGoodsImgs());
 				order.setType(type);
 				order.setNumber(number);
+				order.setTolprice(tolprice);
+				order.setDicprice(dicprice);
 				order.setPrice(price);
+				order.setOutTradeNo(outTradeNo);
 				order.setOrderstatus(OrderInfo.ORDERSTATUS_SUCCESS);
 				order.setUid(uid);
 				order.setBuyName(buyName);
@@ -116,15 +137,15 @@ public class OrderService {
 				orderInfoDao.save(order);
 				
 				//插入物流表
-				OrderShipper shipper = new OrderShipper();
-				shipper.setId(shipper.getId());
-				shipper.setOrderid(orderid);
-				shipper.setUid(uid);
-				shipper.setReceiptName(receiptName);
-				shipper.setReceiptTel(receiptTel);
-				shipper.setReceiptAddress(receiptAddress);
-				shipper.setCreateTime(new Timestamp(System.currentTimeMillis()));
-				orderShipperDao.save(shipper);
+//				OrderShipper shipper = new OrderShipper();
+//				shipper.setId(shipper.getId());
+//				shipper.setOrderid(orderid);
+//				shipper.setUid(uid);
+//				shipper.setReceiptName(receiptName);
+//				shipper.setReceiptTel(receiptTel);
+//				shipper.setReceiptAddress(receiptAddress);
+//				shipper.setCreateTime(new Timestamp(System.currentTimeMillis()));
+//				orderShipperDao.save(shipper);
 				
 				List<OrderDetailForm> orderList = form.getOrderDetail();
 				if(orderList != null && orderList.size() > 0) {
@@ -153,6 +174,14 @@ public class OrderService {
 					resp.setReturnCode(Constant.ORDERNOTEXISTS);
 					resp.setErrorMessage("订单详情不存在，请添加商品!");
 					log.error("【外卖商品下单订单参数错误】,{}",JSON.toJSONString(orderList));
+					return resp;
+				}
+				
+				//外卖派单
+				OrderResp orderResp = dianWoDaService.orderSend(form);
+				if(!Constant.SUCCESS.equals(orderResp.getReturnCode())) {
+					resp.setReturnCode(Constant.SUCCESS);
+					resp.setErrorMessage("派单失败!");
 					return resp;
 				}
 				
@@ -193,7 +222,7 @@ public class OrderService {
 		if(details != null && details.size() > 0) {
 			for (OrderDetail order : details) {
 				OrderDetailVo vo = new OrderDetailVo();
-				BeanUtils.copyProperties(order, vo,new String[]{"createTime", "updateTime","billTime"});
+				BeanUtils.copyProperties(order, vo,new String[]{"createTime", "updateTime"});
 				int goodsid = order.getGoodsId();
 				vo.setGoodsThumb(proMap.get(goodsid).getGoodsThumb());
 				vo.setCreateTime((DateUtil.format(order.getCreateTime(), "yyyy-MM-dd HH:mm:ss")));
@@ -243,16 +272,28 @@ public class OrderService {
 		OrderResp resp = new OrderResp();
 		try {
 			String orderid = form.getOrderid();
-			OrderInfo order = orderInfoDao.findByOrderId(orderid);
 			int commentstatus = form.getCommentstatus();
 			int commentlevel = form.getCommentlevel();
 			String comment = form.getComment();
-			if(order != null) {
-				order.setCommentstatus(commentstatus);
-				order.setCommentlevel(commentlevel);
-				order.setComment(comment);
-				orderInfoDao.saveAndFlush(order);
-			}
+			String commentimg =form.getCommentimg();
+			int goodsId = form.getGoodsId();
+			String goodsName = form.getGoodsName();
+			String openid = form.getOpenid();
+			User user = userDao.findByOpenid(openid);
+			int uid = user.getId();
+			
+			OrderComment order = new OrderComment();
+			order.setId(order.getId());
+			order.setUid(uid);
+			order.setOrderid(orderid);
+			order.setGoodsId(goodsId);
+			order.setGoodsName(goodsName);
+			order.setCommentstatus(commentstatus);
+			order.setCommentlevel(commentlevel);
+			order.setCommentimg(commentimg);
+			order.setComment(comment);
+			order.setCreateTime(new Timestamp(System.currentTimeMillis()));
+			orderCommentDao.saveAndFlush(order);
 			resp.setReturnCode(Constant.SUCCESS);
 			resp.setErrorMessage("评价成功!");
 				
@@ -262,6 +303,84 @@ public class OrderService {
 		}
 		return resp;
 	}
+	
+	/**
+	 * 查询商品评价
+	 * @param goodsId
+	 * @return
+	 */
+	public List<OrderCommentVo> goodsComment(int goodsId){
+		log.info("【商品评价查询传入参数】:{}", goodsId);
+		List<OrderCommentVo> orderResp = new ArrayList<OrderCommentVo>();
+		List<OrderComment> list =  orderCommentDao.findByGoodsId(goodsId);
+		if(list != null && list.size() > 0) {
+			for(OrderComment com : list) {
+				OrderCommentVo vo = new OrderCommentVo();
+				BeanUtils.copyProperties(com, vo,new String[]{"createTime"});
+				vo.setCreateTime((DateUtil.format(com.getCreateTime(), "yyyy-MM-dd HH:mm:ss")));
+				orderResp.add(vo);
+			}
+		}
+		return orderResp;
+	}
+	
+	
+	/**
+	 * 用户上传图片
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	public void uploadPicture(HttpServletRequest request, HttpServletResponse response) throws Exception {
+	        //获取文件需要上传到的路径
+	        File directory = new File("../yaso");
+	        String path = directory.getCanonicalPath() + "/upload/";
+	        String companyname = request.getParameter("name").toString();
+	        // 判断存放上传文件的目录是否存在（不存在则创建）
+	        File dir = new File(path);
+	        if (!dir.exists()) {
+	            dir.mkdir();
+	        }
+	        log.debug("path=" + path);
+	        request.setCharacterEncoding("utf-8"); //设置编码
+	        JSONArray jsonArray = new JSONArray();
+	        try {
+	            StandardMultipartHttpServletRequest req = (StandardMultipartHttpServletRequest) request;
+	            Iterator<String> iterator = req.getFileNames();
+	            while (iterator.hasNext()) {
+	                HashMap<String, Object> res = new HashMap<String, Object>();
+	                MultipartFile file = req.getFile(iterator.next());
+	                // 获取文件名
+	                String fileNames = file.getOriginalFilename();
+	                int split = fileNames.lastIndexOf(".");
+	                //获取上传文件的后缀
+	                String extName = fileNames.substring(split + 1, fileNames.length());
+	                //组成新的图片名称
+	                String newName = companyname + "." + extName;
+	                String destPath = path + newName;
+	                log.debug("destPath=" + destPath);
+	 
+	                //真正写到磁盘上
+	                File file1 = new File(destPath);
+	                OutputStream out = new FileOutputStream(file1);
+	                out.write(file.getBytes());
+	                res.put("url", destPath);
+	                jsonArray.add(res);
+	 
+	                out.close();
+	            }
+	        } catch (Exception e) {
+	            log.error("", e);
+	        }
+	 
+	        PrintWriter printWriter = response.getWriter();
+	        response.setContentType("application/json");
+	        response.setCharacterEncoding("utf-8");
+	        printWriter.write(JSON.toJSONString(jsonArray));
+	        printWriter.flush();
+	 
+	    }
+	
 	
 	
 	/**

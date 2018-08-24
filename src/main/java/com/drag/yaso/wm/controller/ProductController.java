@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.drag.yaso.wm.service.ProductService;
+import com.drag.yaso.wm.vo.ProductActivityVo;
 import com.drag.yaso.wm.vo.ProductInfoVo;
 
 
@@ -59,6 +60,15 @@ public class ProductController {
 		return new ResponseEntity<ProductInfoVo>(detailVo, HttpStatus.OK);
 	}
 	
+	/**
+	 * 查询所有商品活动、
+	 * @return
+	 */
+	@RequestMapping(value = "/listactivity", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<List<ProductActivityVo>> listActivity() {
+		List<ProductActivityVo> rows= productInfoService.listActivity();
+		return new ResponseEntity<List<ProductActivityVo>>(rows, HttpStatus.OK);
+	}
 	
 	
 }
