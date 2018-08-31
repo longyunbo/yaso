@@ -25,13 +25,12 @@ import com.drag.yaso.user.entity.UserTicketRecord;
 import com.drag.yaso.user.entity.UserTicketTemplate;
 import com.drag.yaso.user.form.UserTicketForm;
 import com.drag.yaso.user.resp.UserTicketResp;
+import com.drag.yaso.user.vo.UserTicketDetailVo;
 import com.drag.yaso.user.vo.UserTicketTemplateVo;
 import com.drag.yaso.user.vo.UserTicketVo;
 import com.drag.yaso.utils.BeanUtils;
 import com.drag.yaso.utils.DateUtil;
-import com.drag.yaso.utils.StringUtil;
 import com.drag.yaso.wm.dao.ProductInfoDao;
-import com.drag.yaso.wm.entity.ProductInfo;
 import com.drag.yaso.wm.form.OrderDetailForm;
 import com.drag.yaso.wm.form.OrderInfoForm;
 import com.drag.yaso.wm.resp.OrderResp;
@@ -52,8 +51,6 @@ public class UserTicketService {
 	UserTicketTemplateDao userTicketTemplateDao;
 	@Autowired
 	private UserDao userDao;
-	@Autowired
-	private ProductInfoDao productInfoDao;
 	
 	/**
 	 * 卡券列表
@@ -262,6 +259,7 @@ public class UserTicketService {
 								ticketDetail.setCreateTime(new Timestamp(System.currentTimeMillis()));
 								userTicketDetailDao.save(ticketDetail);
 							}
+							resp.setTicketId(ticketid);
 							resp.setReturnCode(Constant.SUCCESS);
 							resp.setErrorMessage("礼品卡购买成功!");
 						}
@@ -285,4 +283,100 @@ public class UserTicketService {
 		return resp;
 	}
 	
+	
+	/**
+	 * 查询礼品卡详情
+	 * @param ticketid
+	 * @return
+	 */
+	public List<UserTicketDetailVo> listTicketDetail(int ticketid) {
+		List<UserTicketDetailVo> ticketResp = new ArrayList<UserTicketDetailVo>();
+		List<UserTicketDetail> ticketList = userTicketDetailDao.findByTicketId(ticketid);
+		if(ticketList != null && ticketList.size() > 0) {
+			for(UserTicketDetail ticket : ticketList) {
+				UserTicketDetailVo vo = new UserTicketDetailVo();
+				BeanUtils.copyProperties(ticket, vo,new String[]{"createTime"});
+				vo.setCreateTime((DateUtil.format(ticket.getCreateTime(), "yyyy-MM-dd HH:mm:ss")));
+				ticketResp.add(vo);
+			}
+		}
+		return ticketResp;
+	}
+	
+	/**
+	 * 赠送卡券
+	 * @param ticketid
+	 * @return
+	 */
+	public OrderResp sendTicket(int ticketid,String content) {
+		log.info("【礼品卡赠送】,ticketid:{}",ticketid);
+		OrderResp resp = new OrderResp();
+		try {
+			UserTicket ticket = userTicketDao.findOne(ticketid);
+			if(ticket != null) {
+				ticket.setContent(content);
+				ticket.setStatus(UserTicket.STATUS_SEND);
+				userTicketDao.saveAndFlush(ticket);
+				resp.setReturnCode(Constant.SUCCESS);
+				resp.setErrorMessage("礼品卡赠送成功!");
+			}else {
+				resp.setReturnCode(Constant.TICKETNOTEXISTS);
+				resp.setErrorMessage("卡券不存在!");
+				log.error("【礼品卡赠送，编号不存在】,ticketid:{}",ticketid);
+			}
+		} catch (Exception e) {
+			log.error("系统异常,{}",e);
+			throw AMPException.getException("礼品卡购买异常!");
+		}
+		return resp;
+	}
+	
+	/**
+	 * 获取礼品卡
+	 * @param ticketid 卡券编号
+	 * @param openid 获赠者
+	 * @param sendOpenid 赠送者
+	 * @return
+	 */
+	public OrderResp receiveTicket(int ticketid,String openid,String sendOpenid) {
+		log.info("【礼品卡获取】,ticketid:{},获赠者openid:{},赠送者sendOpenid:{}",ticketid,openid,sendOpenid);
+		OrderResp resp = new OrderResp();
+		try {
+			UserTicket ticket = userTicketDao.findOne(ticketid);
+			User user = userDao.findByOpenid(openid);
+			User sendUser = userDao.findByOpenid(sendOpenid);
+			if(user != null) {
+				int uid = user.getId();
+				int fuid = sendUser.getId();
+				if(ticket != null) {
+					//赠送者编号
+					ticket.setFuid(fuid);
+					ticket.setUid(uid);
+					ticket.setStatus(UserTicket.STATUS_NO);
+					userTicketDao.saveAndFlush(ticket);
+					//修改详情中卡券的拥有者
+					List<UserTicketDetail> ticketList = userTicketDetailDao.findByTicketId(ticketid);
+					for(UserTicketDetail detail : ticketList) {
+						detail.setUid(uid);
+						userTicketDetailDao.saveAndFlush(detail);
+					}
+					resp.setReturnCode(Constant.SUCCESS);
+					resp.setErrorMessage("礼品卡获取成功!");
+				}else {
+					resp.setReturnCode(Constant.TICKETNOTEXISTS);
+					resp.setErrorMessage("卡券不存在!");
+					log.error("【礼品卡获赠，编号不存在】,ticketid:{}",ticketid);
+				}
+			}else {
+				resp.setReturnCode(Constant.USERNOTEXISTS);
+				resp.setErrorMessage("用户不存在!");
+				log.error("【礼品卡获赠，用户不存在】,openid:{}",openid);
+			}
+			
+		} catch (Exception e) {
+			log.error("系统异常,{}",e);
+			throw AMPException.getException("礼品卡获取异常!");
+		}
+		return resp;
+	}
 }

@@ -9,5 +9,6 @@ public class OrderResp extends BaseResponse{
 	
 	private static final long serialVersionUID = -432268651252268645L;
 	
+	private int ticketId;
 	
 }

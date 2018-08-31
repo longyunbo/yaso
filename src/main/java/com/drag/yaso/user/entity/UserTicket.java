@@ -37,10 +37,12 @@ public class UserTicket implements Serializable {
 	private static final long serialVersionUID = 9040973201457873437L;
 	
 	
-	// 状态:0-未使用 1-已使用 2-已过期
+	// 状态:0-未使用 1-已使用 2-已过期 3-赠送中
 	public static final int STATUS_NO = 0;
 	public static final int STATUS_YES = 1;
 	public static final int STATUS_OVER = 2;
+	public static final int STATUS_SEND = 3;
+	public static final int STATUS_NORMAL = 4;
 	
 	/**
 	 * 自增id

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.drag.yaso.user.resp.UserTicketResp;
 import com.drag.yaso.user.service.UserTicketService;
+import com.drag.yaso.user.vo.UserTicketDetailVo;
 import com.drag.yaso.user.vo.UserTicketTemplateVo;
 import com.drag.yaso.user.vo.UserTicketVo;
 import com.drag.yaso.wm.form.OrderInfoForm;
@@ -72,7 +73,42 @@ public class UserTicketController {
 	 */
 	@RequestMapping(value = "/purchase", method = {RequestMethod.POST,RequestMethod.GET})
 	public @ResponseBody ResponseEntity<OrderResp> purchase(@RequestBody OrderInfoForm form) {
-		OrderResp detailVo = userTicketService.purchase(form);
-		return new ResponseEntity<OrderResp>(detailVo, HttpStatus.OK);
+		OrderResp resp = userTicketService.purchase(form);
+		return new ResponseEntity<OrderResp>(resp, HttpStatus.OK);
+	}
+	
+	/**
+	 * 获取礼品卡详情
+	 * @param ticketId
+	 * @return
+	 */
+	@RequestMapping(value = "/ticketdetail", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<List<UserTicketDetailVo>> listTicketDetail(@RequestParam(required = true) int ticketId) {
+		List<UserTicketDetailVo> rows= userTicketService.listTicketDetail(ticketId);
+		return new ResponseEntity<List<UserTicketDetailVo>>(rows, HttpStatus.OK);
+	}
+	
+	/**
+	 * 礼品卡赠送
+	 * @param ticketId
+	 * @return
+	 */
+	@RequestMapping(value = "/send", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<OrderResp> send(@RequestParam(required = true) int ticketId,@RequestParam String content) {
+		OrderResp resp = userTicketService.sendTicket(ticketId,content);
+		return new ResponseEntity<OrderResp>(resp, HttpStatus.OK);
+	}
+	
+	/**
+	 * 好友礼品卡获取
+	 * @param ticketId
+	 * @param openid
+	 * @param sendOpenid
+	 * @return
+	 */
+	@RequestMapping(value = "/receive", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<OrderResp> receive(@RequestParam(required = true) int ticketId,@RequestParam(required = true) String openid, @RequestParam(required = true)String sendOpenid) {
+		OrderResp resp = userTicketService.receiveTicket(ticketId,openid,sendOpenid);
+		return new ResponseEntity<OrderResp>(resp, HttpStatus.OK);
 	}
 }
