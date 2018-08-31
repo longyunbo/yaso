@@ -53,6 +53,10 @@ public class UserTicket implements Serializable {
 	 */
 	private int uid;
 	/**
+	 * 赠送者编号(礼品卡使用)
+	 */
+	private int fuid;
+	/**
 	 * 商品编号
 	 */
 	private int goodsId;
@@ -116,6 +120,10 @@ public class UserTicket implements Serializable {
 	 * 状态:0-未使用 1-已使用 2-已过期
 	 */
 	private int status;
+	/**
+	 * 商户订单号
+	 */
+	private String outTradeNo;
 	/**
 	 * 创建时间
 	 */

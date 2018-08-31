@@ -20,9 +20,13 @@ public class OrderDetailForm {
 	 */
 	private String goodsName;
 	/**
-	 * 用户编号
+	 * 商品图片
 	 */
-//	private String openid;
+	private String goodsThumb;
+	/**
+	 * 类型
+	 */
+	private String type;
 	/**
 	 * 购买规格
 	 */
@@ -35,9 +39,6 @@ public class OrderDetailForm {
 	 * 消耗金额
 	 */
 	private BigDecimal price;
-//	/**
-//	 * 支付积分(数量*消耗积分)
-//	 */
-//	private BigDecimal payScore;
+	
 
 }

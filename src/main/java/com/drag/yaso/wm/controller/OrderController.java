@@ -5,8 +5,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.drag.yaso.common.BaseResponse;
+import com.drag.yaso.wm.form.OrderCommentForm;
 import com.drag.yaso.wm.form.OrderInfoForm;
 import com.drag.yaso.wm.resp.OrderResp;
 import com.drag.yaso.wm.service.OrderService;
@@ -29,8 +29,6 @@ import com.drag.yaso.wm.vo.OrderInfoVo;
 @RestController
 @RequestMapping(value = "/yaso/order")
 public class OrderController {
-	
-	private final static Logger log = LoggerFactory.getLogger(OrderController.class);
 
 	@Autowired
 	private OrderService orderInfoService;
@@ -70,12 +68,23 @@ public class OrderController {
 	}
 	
 	/**
+	 * 申请退款
+	 * @param orderid
+	 * @return
+	 */
+	@RequestMapping(value = "/applyreturn", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<BaseResponse> applyReturn(@RequestParam(required = true)  String orderid) {
+		BaseResponse resp = orderInfoService.applyReturn(orderid);
+		return new ResponseEntity<BaseResponse>(resp, HttpStatus.OK);
+	}
+	
+	/**
 	 * 外卖新增评论
 	 * @param form
 	 * @return
 	 */
 	@RequestMapping(value = "/comment", method = {RequestMethod.POST,RequestMethod.GET})
-	public @ResponseBody ResponseEntity<OrderResp> comment(@RequestBody OrderInfoForm form) {
+	public @ResponseBody ResponseEntity<OrderResp> comment(@RequestBody OrderCommentForm form) {
 		OrderResp detailVo = orderInfoService.comment(form);
 		return new ResponseEntity<OrderResp>(detailVo, HttpStatus.OK);
 	}

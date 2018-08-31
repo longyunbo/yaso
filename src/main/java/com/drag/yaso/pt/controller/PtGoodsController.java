@@ -2,6 +2,9 @@ package com.drag.yaso.pt.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import com.drag.yaso.pt.resp.PtGoodsResp;
 import com.drag.yaso.pt.service.PtGoodsService;
 import com.drag.yaso.pt.vo.PtGoodsDetailVo;
 import com.drag.yaso.pt.vo.PtGoodsVo;
+import com.drag.yaso.utils.WxUtil;
 
 
 @RestController
@@ -95,5 +99,16 @@ public class PtGoodsController {
 		return new ResponseEntity<PtGoodsResp>(br, HttpStatus.OK);
 	}
 	
+	/**
+	 * 生成海报
+	 * @param code
+	 * @param page
+	 * @return
+	 */
+	@RequestMapping(value = "/poster", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<String> poster(HttpServletRequest request,HttpServletResponse response) {
+		WxUtil.getPoster(request,response);
+		return new ResponseEntity<String>("OK", HttpStatus.OK);
+	}
 	
 }

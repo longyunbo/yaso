@@ -94,23 +94,6 @@ public class OrderInfoForm {
 	 */
 	private String formId;
 	/**
-	 * 好评状态,0:好评,1:中评,2:差评
-	 */
-	private int commentstatus;
-	/**
-	 * 好评星数
-	 */
-	private int commentlevel;
-	/**
-	 * 商品评论
-	 */
-	private String comment;
-	/**
-	 * 评论图片
-	 */
-	private String commentimg;
-	
-	/**
 	 * -------点我达所需参数------------
 	 */
 	/**

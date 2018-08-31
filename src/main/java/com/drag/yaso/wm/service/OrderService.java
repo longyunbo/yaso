@@ -23,6 +23,7 @@ import org.springframework.web.multipart.support.StandardMultipartHttpServletReq
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.drag.yaso.common.BaseResponse;
 import com.drag.yaso.common.Constant;
 import com.drag.yaso.common.exception.AMPException;
 import com.drag.yaso.dwd.service.DianWoDaService;
@@ -39,6 +40,7 @@ import com.drag.yaso.wm.entity.OrderComment;
 import com.drag.yaso.wm.entity.OrderDetail;
 import com.drag.yaso.wm.entity.OrderInfo;
 import com.drag.yaso.wm.entity.ProductInfo;
+import com.drag.yaso.wm.form.OrderCommentForm;
 import com.drag.yaso.wm.form.OrderDetailForm;
 import com.drag.yaso.wm.form.OrderInfoForm;
 import com.drag.yaso.wm.resp.OrderResp;
@@ -135,17 +137,6 @@ public class OrderService {
 				order.setCreateTime(new Timestamp(System.currentTimeMillis()));
 				order.setUpdateTime(new Timestamp(System.currentTimeMillis()));
 				orderInfoDao.save(order);
-				
-				//插入物流表
-//				OrderShipper shipper = new OrderShipper();
-//				shipper.setId(shipper.getId());
-//				shipper.setOrderid(orderid);
-//				shipper.setUid(uid);
-//				shipper.setReceiptName(receiptName);
-//				shipper.setReceiptTel(receiptTel);
-//				shipper.setReceiptAddress(receiptAddress);
-//				shipper.setCreateTime(new Timestamp(System.currentTimeMillis()));
-//				orderShipperDao.save(shipper);
 				
 				List<OrderDetailForm> orderList = form.getOrderDetail();
 				if(orderList != null && orderList.size() > 0) {
@@ -262,12 +253,34 @@ public class OrderService {
 	}
 	
 	/**
+	 * 申请退款
+	 * @param orderid
+	 * @return
+	 */
+	public BaseResponse applyReturn(String orderid){
+		log.info("【申请退款传入参数】:orderid{}", orderid);
+		BaseResponse resp = new BaseResponse();
+		OrderInfo order = orderInfoDao.findByOrderId(orderid);
+		if(order != null) {
+			order.setOrderstatus(OrderInfo.ORDERSTATUS_RETURN_ON);
+			orderInfoDao.saveAndFlush(order);
+			resp.setReturnCode(Constant.SUCCESS);
+			resp.setErrorMessage("申请退款成功!");
+		}else {
+			resp.setReturnCode(Constant.ORDERNOTEXISTS);
+			resp.setErrorMessage("订单不存在!");
+		}
+		return resp;
+	}
+	
+	
+	/**
 	 * 外卖评论
 	 * @param form
 	 * @return
 	 */
 	@Transactional
-	public OrderResp comment(OrderInfoForm form) {
+	public OrderResp comment(OrderCommentForm form) {
 		log.info("【外卖评价传入参数】:{}",JSON.toJSONString(form));
 		OrderResp resp = new OrderResp();
 		try {

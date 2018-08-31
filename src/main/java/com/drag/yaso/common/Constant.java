@@ -17,6 +17,7 @@ public final class Constant {
 	public final static String TYPE_KJ = "kj";
 	public final static String TYPE_ZL = "zl";
 	public final static String TYPE_DR = "drag";
+	public final static String TYPE_LPK = "lpk";
 	
 	//消息发送状态
 	public final static int SENDSTATUS_SUCC = 1;

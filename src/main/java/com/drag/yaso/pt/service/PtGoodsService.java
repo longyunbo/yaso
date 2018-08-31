@@ -119,10 +119,11 @@ public class PtGoodsService {
 					UserVo userVo = new UserVo();
 					int groupId = pu.getGrouperId();
 					userVo.setCode(pu.getPtcode());
+					userVo.setIsHeader(pu.getIsHeader());
 					userVo.setStatus(pu.getPtstatus());
 					User user = userMap.get(groupId);
 					if(user != null) {
-						BeanUtils.copyProperties(user, userVo,new String[]{"createTime","updateTime"});
+						BeanUtils.copyProperties(user, userVo,new String[]{"createTime"});
 						userVo.setCreateTime(DateUtil.format(pu.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
 						grouperList.add(userVo);
 					}
@@ -296,9 +297,10 @@ public class PtGoodsService {
 						int uid = pu.getUid();
 						User user = userMap.get(uid);
 						userVo.setStatus(pu.getPtstatus());
+						userVo.setIsHeader(pu.getIsHeader());
 						userVo.setCode(pu.getPtcode());
 						if(user != null) {
-							BeanUtils.copyProperties(user, userVo,new String[]{"createTime","updateTime"});
+							BeanUtils.copyProperties(user, userVo,new String[]{"createTime"});
 							userVo.setCreateTime(DateUtil.format(pu.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
 							grouperList.add(userVo);
 						}

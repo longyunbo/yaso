@@ -40,7 +40,8 @@ public class OrderInfo implements Serializable {
 	// 订单状态0-未付款，1-已付款，2-已退款
 	public static final int ORDERSTATUS_UNPAY = 0;
 	public static final int ORDERSTATUS_SUCCESS = 1;
-	public static final int ORDERSTATUS_RETURN = 2;
+	public static final int ORDERSTATUS_RETURN_SUCC = 2;
+	public static final int ORDERSTATUS_RETURN_ON = 3;
 	
 	//送餐状态，0：派单中，3：已转单，5：取餐中，10：已到店，15：配送中，98：异常，99：已取消，100：已到达
 	public static final int STATUS_PD = 0;
@@ -154,18 +155,6 @@ public class OrderInfo implements Serializable {
 	 * 退款单号
 	 */
 	private String refundcode;
-//	/**
-//	 * 好评状态,0:好评,1:中评,2:差评
-//	 */
-//	private int commentstatus;
-//	/**
-//	 * 好评星数
-//	 */
-//	private int commentlevel;
-//	/**
-//	 * 商品评论
-//	 */
-//	private String comment;
 	/**
 	 * 创建时间
 	 */

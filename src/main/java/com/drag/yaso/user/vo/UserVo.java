@@ -24,6 +24,10 @@ public class UserVo implements Serializable {
 	 */
 	private String openid;
 	/**
+	 * 是否团长 0-不是 1-是
+	 */
+	private int isHeader;
+	/**
 	 * 头像
 	 */
 	private String avatar;
