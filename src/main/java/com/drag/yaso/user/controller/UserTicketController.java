@@ -89,6 +89,17 @@ public class UserTicketController {
 	}
 	
 	/**
+	 * 获取我的卡券详情
+	 * @param openid
+	 * @return
+	 */
+	@RequestMapping(value = "/myticket", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<List<UserTicketDetailVo>> myTicket(@RequestParam(required = true) String openid) {
+		List<UserTicketDetailVo> rows= userTicketService.listTicketDetailByOpenid(openid);
+		return new ResponseEntity<List<UserTicketDetailVo>>(rows, HttpStatus.OK);
+	}
+	
+	/**
 	 * 礼品卡赠送
 	 * @param ticketId
 	 * @return

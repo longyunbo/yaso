@@ -304,6 +304,29 @@ public class UserTicketService {
 	}
 	
 	/**
+	 * 根据openid获取卡券详情
+	 * @param openid
+	 * @return
+	 */
+	public List<UserTicketDetailVo> listTicketDetailByOpenid(String openid) {
+		List<UserTicketDetailVo> ticketResp = new ArrayList<UserTicketDetailVo>();
+		User user = userDao.findByOpenid(openid);
+		if(user != null) {
+			int uid = user.getId();
+			List<UserTicketDetail> ticketList = userTicketDetailDao.findByUid(uid);
+			if(ticketList != null && ticketList.size() > 0) {
+				for(UserTicketDetail ticket : ticketList) {
+					UserTicketDetailVo vo = new UserTicketDetailVo();
+					BeanUtils.copyProperties(ticket, vo,new String[]{"createTime"});
+					vo.setCreateTime((DateUtil.format(ticket.getCreateTime(), "yyyy-MM-dd HH:mm:ss")));
+					ticketResp.add(vo);
+				}
+			}
+		}
+		return ticketResp;
+	}
+	
+	/**
 	 * 赠送卡券
 	 * @param ticketid
 	 * @return

@@ -1,5 +1,6 @@
 package com.drag.yaso.wm.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -47,6 +48,18 @@ public class ProductController {
 	public @ResponseBody ResponseEntity<List<ProductInfoVo>> listSearch(@RequestParam String name) {
 		List<ProductInfoVo> rows= productInfoService.listGoodsByName(name);
 		return new ResponseEntity<List<ProductInfoVo>>(rows, HttpStatus.OK);
+	}
+	
+	/**
+	 * 热门搜索
+	 * @return
+	 */
+	@RequestMapping(value = "/hotsearch", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<List<String>> hotSearch() {
+		List<String> rows = new ArrayList<String>();
+		rows.add("越南香芒鸡扒沙拉");
+		rows.add("吞拿鱼三明治");
+		return new ResponseEntity<List<String>>(rows, HttpStatus.OK);
 	}
 	
 	/**

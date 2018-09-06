@@ -61,6 +61,10 @@ public class UserTicketRecord implements Serializable {
 	 */
 	private int ticketId;
 	/**
+	 * 卡券使用数量
+	 */
+	private int number;
+	/**
 	 * 创建时间
 	 */
 	private Date createTime;

@@ -3,6 +3,8 @@ package com.drag.yaso.wm.form;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.alibaba.fastjson.JSONObject;
+
 import lombok.Data;
 
 /**
@@ -139,7 +141,14 @@ public class OrderInfoForm {
 	
 	
 	
-	
+	/**
+	 * 支付类型,lpk-礼品卡
+	 */
+	private String payType;
+	/**
+	 * 卡券卡数组
+	 */
+	private List<JSONObject> ticketJson;
 	
 	
 	/**

@@ -20,5 +20,9 @@ public class CallBackForm {
 	 * 验证签名
 	 */
 	private String sig;
+	/**
+	 * 订单取消原因
+	 */
+	private String cancel_reason;
 	
 }

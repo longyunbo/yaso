@@ -1,7 +1,5 @@
 package com.drag.yaso.dwd.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONObject;
 import com.drag.yaso.dwd.form.CallBackForm;
 import com.drag.yaso.dwd.service.DianWoDaService;
+import com.drag.yaso.dwd.service.DianWoDaServiceTest;
 import com.drag.yaso.wm.form.OrderInfoForm;
 import com.drag.yaso.wm.resp.OrderResp;
 
@@ -25,10 +24,11 @@ public class DianWoDaController {
 	
 	@Autowired
 	DianWoDaService dianWoDaService;
-	private final static Logger log = LoggerFactory.getLogger(DianWoDaController.class);
+	@Autowired
+	DianWoDaServiceTest dianWoDaServiceTest;
 	
 	@RequestMapping(value = "/ordersend", method = {RequestMethod.POST,RequestMethod.GET})
-	public @ResponseBody ResponseEntity<OrderResp> getUser() {
+	public @ResponseBody ResponseEntity<OrderResp> orderSend() {
 		OrderInfoForm form = new OrderInfoForm();
 		OrderResp resp = dianWoDaService.orderSend(form);
 		return new ResponseEntity<OrderResp>(resp, HttpStatus.OK);
@@ -53,6 +53,13 @@ public class DianWoDaController {
 	@RequestMapping(value = "/callback", method = {RequestMethod.POST,RequestMethod.GET})
 	public @ResponseBody ResponseEntity<JSONObject> callback(@RequestBody CallBackForm form) {
 		JSONObject Json = dianWoDaService.callback(form);
+		return new ResponseEntity<JSONObject>(Json, HttpStatus.OK);
+	}
+	
+	
+	@RequestMapping(value = "/ordertest", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<JSONObject> orderTest(@RequestParam String order_original_id,@RequestParam String type) {
+		JSONObject Json = dianWoDaServiceTest.acceptedTest(order_original_id,type);
 		return new ResponseEntity<JSONObject>(Json, HttpStatus.OK);
 	}
 	

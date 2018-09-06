@@ -239,10 +239,12 @@ public class DianWoDaService {
 			String order_original_id = form.getOrder_original_id();
 			int order_status = form.getOrder_status();
 			Long time_status_update = form.getTime_status_update();
+			String cancel_reason = form.getCancel_reason();
 			OrderInfo order = orderInfoDao.findByOrderId(order_original_id);
 			if(order != null) {
 				order.setDeliverystatus(order_status);
 				order.setUpdateTime(new Date(time_status_update));
+				order.setRemark(cancel_reason);
 				orderInfoDao.saveAndFlush(order);
 				resp.put("success", true);
 			}
