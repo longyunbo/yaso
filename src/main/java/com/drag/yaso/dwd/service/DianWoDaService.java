@@ -36,7 +36,7 @@ public class DianWoDaService {
 	public OrderResp orderSend(OrderInfoForm form) {
 		OrderResp resp = new OrderResp();
 		try {
-			log.info("【点我达派发订单传入参数】:form= {}",form);
+			log.info("【点我达派发订单传入参数】:form= {}",JSON.toJSONString(form));
 			String url = "api/v3/order-send.json";
 			Date now = new Date(System.currentTimeMillis());
 			BigDecimal order_price = form.getPrice().multiply(new BigDecimal(100));
@@ -49,13 +49,13 @@ public class DianWoDaService {
 			//订单备注
 			json.put("order_remark", form.getOrder_remark());
 			//订单金额（分）
-			json.put("order_price",order_price);
+			json.put("order_price",order_price.intValue());
 			//订单商品重量，单位：克 如果无，传0
 			json.put("cargo_weight", 250);
 			//商品份数，默认传1
 			json.put("cargo_num", 1);
 			//行政区划代码 如杭州：330100
-			json.put("city_code", 330100);
+			json.put("city_code", form.getCity_code());
 			//商家编号
 			json.put("seller_id", form.getSeller_id());
 			//商家店铺名称
@@ -63,21 +63,21 @@ public class DianWoDaService {
 			//商家联系方式
 			json.put("seller_mobile", form.getSeller_mobile());
 			//商家文字地址
-			json.put("seller_address", "杭州市下城区白石路318号灯塔发展大厦A座");
+			json.put("seller_address", form.getSeller_address());
 			//商家纬度坐标.(坐标系为高德地图坐标系，又称火星坐标). （单位：度）
-			json.put("seller_lat", 30.315408);
+			json.put("seller_lat", form.getSeller_lat());
 			//商家经度坐标.(坐标系为高德地图坐标系，又称火星坐标) （单位：度）
-			json.put("seller_lng", 120.165993);
+			json.put("seller_lng", form.getSeller_lng());
 			//收货人姓名
 			json.put("consignee_name", form.getReceiptName());
 			//收货人手机号码
 			json.put("consignee_mobile", form.getReceiptTel());
 			//收货人地址
-			json.put("consignee_address", "杭州市下城区西文街147号中粮方圆府");
+			json.put("consignee_address", form.getReceiptAddress());
 			//收货人纬度坐标.(坐标系为高德地图坐标系，又称火星坐标)
-			json.put("consignee_lat", 30.315272);
+			json.put("consignee_lat", form.getConsignee_lat());
 			//收货人经度坐标.(坐标系为高德地图坐标系，又称火星坐标)
-			json.put("consignee_lng", 120.168513);
+			json.put("consignee_lng", form.getConsignee_lng());
 			//配送员到店是否需要垫付订单金额	1：是 0：否
 			json.put("money_rider_needpaid", 0);
 			//配送员到店后先行垫付的金额(分)，一般货到付款情况下等于餐品价格。若无，传0
@@ -85,13 +85,13 @@ public class DianWoDaService {
 			//配送员送达到客户时，向客户收取的费用（分）
 			json.put("money_rider_charge", 0);
 			//商品必须到店才开始准备或是排队购买的情况下，在商家处等待所需时间（秒）
-			json.put("time_waiting_at_seller", 600);
+			json.put("time_waiting_at_seller", 0);
 			//渠道支付配送费（分）
-			json.put("delivery_fee_from_seller", 500);
+			json.put("delivery_fee_from_seller", 0);
 			  
 			Map<String, Object> params =JSONObject.parseObject(json.toString());
 			String commParam = SignUtil.getComParam(url,params);
-			log.info("【点我达派发订单传入参数commParam】:{}",commParam);
+			log.info("【点我达派发订单传入参数json】:{}",json);
 			String httpresult = HttpsUtil.sendPost(commParam, params);
 			log.info("【点我达派发订单返回参数httpresult】:{}",httpresult);
 			if (httpresult != null) {
@@ -99,8 +99,8 @@ public class DianWoDaService {
 				String errorCode = jsonResult.getString("errorCode");
 				String message = jsonResult.getString("message");
 				if("0".equals(errorCode)) {
-					String dwd_order_id = jsonResult.getString("dwd_order_id");
-					log.info("【点我达派发订单号】:{}",dwd_order_id);
+					String result = jsonResult.getString("result");
+					log.info("【点我达派发订单号】result:{}",result);
 				}else {
 					resp.setReturnCode(Constant.FAIL);
 					resp.setErrorMessage(message);
@@ -136,7 +136,7 @@ public class DianWoDaService {
 			
 			Map<String, Object> params =JSONObject.parseObject(json.toString());
 			String commParam = SignUtil.getComParam(url,params);
-			log.info("【点我达查询订单传入参数commParam】:{}",commParam);
+			log.info("【点我达查询订单传入参数json】:{}",json);
 			String httpresult = HttpsUtil.sendPost(commParam, params);
 			log.info("【点我达查询订单返回参数httpresult】:{}",httpresult);
 			if (httpresult != null) {
@@ -176,7 +176,7 @@ public class DianWoDaService {
 			
 			Map<String, Object> params =JSONObject.parseObject(json.toString());
 			String commParam = SignUtil.getComParam(url,params);
-			log.info("【点我达取消订单传入参数commParam】:{}",commParam);
+			log.info("【点我达取消订单传入参数json】:{}",json);
 			String httpresult = HttpsUtil.sendPost(commParam, params);
 			log.info("【点我达取消订单返回参数httpresult】:{}",httpresult);
 			if (httpresult != null) {
@@ -207,7 +207,7 @@ public class DianWoDaService {
 			
 			Map<String, Object> params =JSONObject.parseObject(json.toString());
 			String commParam = SignUtil.getComParam(url,params);
-			log.info("【点我达查询配送员传入参数commParam】:{}",commParam);
+			log.info("【点我达查询配送员传入参数json】:{}",json);
 			String httpresult = HttpsUtil.sendPost(commParam, params);
 			log.info("【点我达查询配送员返回参数httpresult】:{}",httpresult);
 			if (httpresult != null) {

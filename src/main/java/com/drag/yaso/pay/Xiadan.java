@@ -34,11 +34,11 @@ public class Xiadan {
 			order.setAppid(Configure.appid);
 			order.setMch_id(Configure.mch_id);
 			order.setNonce_str(RandomStringGenerator.getRandomStringByLength(32));
-			order.setBody("诸锣记-付款");
+			order.setBody("yaso-付款");
 			order.setOut_trade_no(out_trade_no);
 			order.setTotal_fee(price);
 			order.setSpbill_create_ip(IpUtils.getIpAddr(request));
-			order.setNotify_url("https://zlj.wisdomdr.com/yaso/pay/payresult");
+			order.setNotify_url("https://www.sgddr.com/yaso/pay/payresult");
 			order.setTrade_type("JSAPI");
 			order.setOpenid(openid);
 			order.setSign_type("MD5");

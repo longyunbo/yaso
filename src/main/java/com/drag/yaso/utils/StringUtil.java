@@ -1,5 +1,6 @@
 package com.drag.yaso.utils;
 
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -60,5 +61,23 @@ public class StringUtil {
         }
         return sb.toString();
        }
+	
+
+	public static String listToString(List<String> stringList) {
+		if (stringList == null) {
+			return null;
+		}
+		StringBuilder result = new StringBuilder();
+		boolean flag = false;
+		for (String string : stringList) {
+			if (flag) {
+				result.append(",");
+			} else {
+				flag = true;
+			}
+			result.append(string);
+		}
+		return result.toString();
+	}
 
 }

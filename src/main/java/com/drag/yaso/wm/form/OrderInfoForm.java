@@ -149,6 +149,10 @@ public class OrderInfoForm {
 	 * 卡券卡数组
 	 */
 	private List<JSONObject> ticketJson;
+	/**
+	 * 营销卡券组
+	 */
+	private List<JSONObject> couponsJson;
 	
 	
 	/**

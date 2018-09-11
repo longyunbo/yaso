@@ -46,11 +46,24 @@ public class DianWoDaController {
 	}
 	
 	/**
+	 * 取消订单
+	 * @param order_original_id
+	 * @param cancle_reason
+	 * @return
+	 */
+	@RequestMapping(value = "/ordercancel", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<JSONObject> orderCancel(@RequestParam String order_original_id,@RequestParam String cancle_reason) {
+		JSONObject Json = dianWoDaService.orderCancel(order_original_id,cancle_reason);
+		return new ResponseEntity<JSONObject>(Json, HttpStatus.OK);
+	}
+	
+	/**
 	 * 点我达回调函数
 	 * @param form
 	 * @return
 	 */
-	@RequestMapping(value = "/callback", method = {RequestMethod.POST,RequestMethod.GET})
+	@RequestMapping(value = "/formalcallback", method = {RequestMethod.POST,RequestMethod.GET})
+//	@RequestMapping(value = "/callback", method = {RequestMethod.POST,RequestMethod.GET})
 	public @ResponseBody ResponseEntity<JSONObject> callback(@RequestBody CallBackForm form) {
 		JSONObject Json = dianWoDaService.callback(form);
 		return new ResponseEntity<JSONObject>(Json, HttpStatus.OK);

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSONObject;
 import com.drag.yaso.wm.service.ProductService;
 import com.drag.yaso.wm.vo.ProductActivityVo;
 import com.drag.yaso.wm.vo.ProductInfoVo;
@@ -60,6 +61,19 @@ public class ProductController {
 		rows.add("越南香芒鸡扒沙拉");
 		rows.add("吞拿鱼三明治");
 		return new ResponseEntity<List<String>>(rows, HttpStatus.OK);
+	}
+	
+	/**
+	 * 配送费
+	 * 餐盒费
+	 * @return
+	 */
+	@RequestMapping(value = "/deliver", method = {RequestMethod.POST,RequestMethod.GET})
+	public @ResponseBody ResponseEntity<JSONObject> deliver() {
+		JSONObject json = new JSONObject();
+		json.put("chf", 0);
+		json.put("psf", 0);
+		return new ResponseEntity<JSONObject>(json, HttpStatus.OK);
 	}
 	
 	/**

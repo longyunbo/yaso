@@ -34,6 +34,7 @@ import com.drag.yaso.user.dao.UserTicketRecordDao;
 import com.drag.yaso.user.entity.User;
 import com.drag.yaso.user.entity.UserTicketDetail;
 import com.drag.yaso.user.entity.UserTicketRecord;
+import com.drag.yaso.user.service.UserTicketService;
 import com.drag.yaso.utils.BeanUtils;
 import com.drag.yaso.utils.DateUtil;
 import com.drag.yaso.utils.StringUtil;
@@ -70,6 +71,8 @@ public class OrderService {
 	@Autowired
 	private ProductInfoDao productInfoDao;
 	@Autowired
+	private UserTicketService userTicketService;
+	@Autowired
 	private UserTicketDetailDao userTicketDetailDao;
 	@Autowired
 	private DianWoDaService dianWoDaService;
@@ -90,9 +93,12 @@ public class OrderService {
 			int goodsId = form.getGoodsId();
 			String goodsName = form.getGoodsName();
 			String type = form.getType();
-			//支付类型,lpk-礼品卡
+			//支付类型,lpk-礼品卡,cash-现金券，wx-微信支付
 			String payType = form.getPayType();
+			//礼品卡使用卡券数组
 			List<JSONObject> ticketJson = form.getTicketJson();
+			//优惠券使用数组
+			List<JSONObject> couponsJson = form.getCouponsJson();
 			String outTradeNo = form.getOutTradeNo();
 			//购买总数量
 			int number = form.getNumber();
@@ -146,8 +152,9 @@ public class OrderService {
 				order.setPostalcode(postalcode);
 				order.setReceiptAddress(receiptAddress);
 				
-				//选择礼品卡商品支付的
+				//选择礼品卡菜品券支付的
 				if(payType.equals("lpk")) {
+					List<String> ticketIds = new ArrayList<String>();
 					for(JSONObject detail : ticketJson) {
 						int jsoTicketId = detail.getInteger("ticketId");
 						int JsonTicketNumber = detail.getInteger("ticketNumber");
@@ -175,11 +182,15 @@ public class OrderService {
 						ticketRecord.setNumber(JsonTicketNumber);
 						ticketRecord.setCreateTime(new Timestamp(System.currentTimeMillis()));
 						userTicketRecordDao.save(ticketRecord);
-					
+						ticketIds.add(String.valueOf(jsoTicketId));
 					}
 					//传卡券详情id,多个卡券用逗号分隔
 					order.setOutTradeNo(outTradeNo);
+					String.join(",", ticketIds);
+					order.setTicketId(StringUtil.listToString(ticketIds));
 				}else if(payType.equals("cash")){
+					List<String> ticketIds = new ArrayList<String>();
+					List<String> couponsIds = new ArrayList<String>();
 					//选择礼品卡现金支付的
 					for(JSONObject detail : ticketJson) {
 						int jsoTicketId = detail.getInteger("ticketId");
@@ -198,7 +209,6 @@ public class OrderService {
 						ticketDetail.setPrice(newTicketPrice);
 						userTicketDetailDao.saveAndFlush(ticketDetail);
 						
-						
 						//卡券使用记录
 						UserTicketRecord ticketRecord = new UserTicketRecord();
 						ticketRecord.setId(ticketRecord.getId());
@@ -210,14 +220,39 @@ public class OrderService {
 						ticketRecord.setNumber(1);
 						ticketRecord.setCreateTime(new Timestamp(System.currentTimeMillis()));
 						userTicketRecordDao.save(ticketRecord);
-						
+						ticketIds.add(String.valueOf(jsoTicketId));
 					}
+					//使用外卖的营销卡券，核销掉
+					if(couponsJson != null && couponsJson.size() > 0) {
+						for(JSONObject detail : couponsJson) {
+							int jsoTicketId = detail.getInteger("ticketId");
+							userTicketService.destoryTicket(jsoTicketId);
+							couponsIds.add(String.valueOf(jsoTicketId));
+						}
+					}
+					
 					//传卡券详情id,多个卡券用逗号分隔
 					order.setOutTradeNo(outTradeNo);
+					String.join(",", ticketIds);
+					String.join(",", couponsIds);
+					order.setTicketId(StringUtil.listToString(ticketIds));
+					order.setCoupons(StringUtil.listToString(couponsIds));
 				}else {
+					List<String> ticketIds = new ArrayList<String>();
+					//使用外卖的营销卡券，核销掉
+					if(couponsJson != null && couponsJson.size() > 0) {
+						for(JSONObject detail : couponsJson) {
+							int jsoTicketId = detail.getInteger("ticketId");
+							userTicketService.destoryTicket(jsoTicketId);
+							ticketIds.add(String.valueOf(jsoTicketId));
+						}
+					}
 					//微信支付
 					order.setOutTradeNo(outTradeNo);
+					String.join(",", ticketIds);
+					order.setCoupons(StringUtil.listToString(ticketIds));
 				}
+				order.setPayType(payType);
 				order.setCreateTime(new Timestamp(System.currentTimeMillis()));
 				order.setUpdateTime(new Timestamp(System.currentTimeMillis()));
 				orderInfoDao.save(order);

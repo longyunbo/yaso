@@ -74,9 +74,13 @@ public class OrderInfoVo implements Serializable {
 	 */
 	private String norms;
 	/**
-	 * 订单状态，0:已付款,  1:已退款
+	 * 订单状态，0:未付款,1:已付款, 2:已退款,3:已评价'
 	 */
 	private int orderstatus;
+	/**
+	 * 支付方式,wx-微信,lpk-礼品卡菜品券,cash-礼品卡现金券
+	 */
+	private String payType;
 	/**
 	 * 送餐状态，0：派单中，3：已转单，5：取餐中，10：已到店，15：配送中，98：异常，99：已取消，100：已到达
 	 */

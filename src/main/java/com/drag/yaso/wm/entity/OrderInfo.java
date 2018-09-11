@@ -37,7 +37,7 @@ public class OrderInfo implements Serializable {
 
 	private static final long serialVersionUID = 8976480717545183113L;
 	
-	// 订单状态0-未付款，1-已付款，2-已退款
+	// 订单状态0-未付款，1-已付款，2-已退款,3-退款中
 	public static final int ORDERSTATUS_UNPAY = 0;
 	public static final int ORDERSTATUS_SUCCESS = 1;
 	public static final int ORDERSTATUS_RETURN_SUCC = 2;
@@ -112,6 +112,14 @@ public class OrderInfo implements Serializable {
 	 */
 	private String outTradeNo;
 	/**
+	 * 礼品卡使用卡券编号，多个用逗号分隔
+	 */
+	private String ticketId;
+	/**
+	 * 优惠券使用数组，多个用逗号分隔
+	 */
+	private String coupons;
+	/**
 	 * 购买规格
 	 */
 	private String norms;
@@ -119,6 +127,10 @@ public class OrderInfo implements Serializable {
 	 * 订单状态，0:未付款,1:已付款, 2:已退款,3:已评价'
 	 */
 	private int orderstatus;
+	/**
+	 * 支付方式,wx-微信,lpk-礼品卡菜品券,cash-礼品卡现金券
+	 */
+	private String payType;
 	/**
 	 * 送餐状态，0：派单中，3：已转单，5：取餐中，10：已到店，15：配送中，98：异常，99：已取消，100：已到达
 	 */
